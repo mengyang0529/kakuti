@@ -15,6 +15,7 @@ jobs:
       REGION: asia-northeast1
       REPOSITORY: kakuti-backend
       IMAGE: backend
+      PROJECT_ID: ${{ secrets.GCP_PROJECT_ID }}
     steps:
       - name: Checkout
         uses: actions/checkout@v4
@@ -39,18 +40,24 @@ jobs:
       - name: Set up gcloud SDK
         uses: google-github-actions/setup-gcloud@v2
 
+      - name: Configure gcloud project
+        run: gcloud config set project $PROJECT_ID
+
       - name: Build and push image
         run: |
           IMAGE_TAG=${{ github.sha }}
-          gcloud builds submit --region=$REGION --tag \
-            $REGION-docker.pkg.dev/${{ secrets.GCP_PROJECT_ID }}/$REPOSITORY/$IMAGE:$IMAGE_TAG .
+          gcloud builds submit . \
+            --region=$REGION \
+            --config=backend/cloudbuild.docker.yaml \
+            --substitutions=_REGION=$REGION,_REPOSITORY=$REPOSITORY,_IMAGE=$IMAGE,_IMAGE_TAG=$IMAGE_TAG
           echo "image_tag=$IMAGE_TAG" >> $GITHUB_ENV
 
       - name: Deploy to Cloud Run
         run: |
           IMAGE_TAG=${IMAGE_TAG:-${{ github.sha }}}
           gcloud run deploy kakuti-api \
-            --image=$REGION-docker.pkg.dev/${{ secrets.GCP_PROJECT_ID }}/$REPOSITORY/$IMAGE:$IMAGE_TAG \
+            --project=$PROJECT_ID \
+            --image=$REGION-docker.pkg.dev/$PROJECT_ID/$REPOSITORY/$IMAGE:$IMAGE_TAG \
             --region=$REGION --platform=managed --allow-unauthenticated \
             --min-instances=0 --max-instances=4 --memory=1Gi --cpu=1 --timeout=60 \
             --update-env-vars="REQUIRE_API_KEY=true,GEMINI_REQUEST_TIMEOUT=30" \
