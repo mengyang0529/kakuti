@@ -1,0 +1,94 @@
+/* Global styles with optimized text rendering */
+:root {
+  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Roboto', sans-serif;
+  line-height: 1.5;
+  font-weight: 400;
+  
+  color: #1f2937;
+  background-color: #ffffff;
+  
+  font-synthesis: none;
+  text-rendering: optimizeLegibility;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+  -webkit-text-size-adjust: 100%;
+}
+
+* {
+  box-sizing: border-box;
+}
+
+body {
+  margin: 0;
+  min-width: 320px;
+  min-height: 100vh;
+  background-color: #ffffff;
+  color: #1f2937;
+}
+
+#root {
+  width: 100%;
+  min-height: 100vh;
+}
+
+/* Global text selection color (match highlight green) */
+::selection {
+  background-color: rgba(144, 238, 144, 0.4) !important;
+  color: inherit;
+}
+::-moz-selection {
+  background-color: rgba(144, 238, 144, 0.4) !important;
+  color: inherit;
+}
+/* Ensure form controls and contenteditable also follow */
+input::selection,
+textarea::selection,
+[contenteditable="true"]::selection,
+[contenteditable=""]::selection {
+  background-color: rgba(144, 238, 144, 0.4) !important;
+  color: inherit;
+}
+input::-moz-selection,
+textarea::-moz-selection,
+[contenteditable="true"]::-moz-selection,
+[contenteditable=""]::-moz-selection {
+  background-color: rgba(144, 238, 144, 0.4) !important;
+  color: inherit;
+}
+
+/* Optimized button styles */
+button {
+  border-radius: 6px;
+  border: 1px solid transparent;
+  padding: 0.6em 1.2em;
+  font-size: 1em;
+  font-weight: 500;
+  font-family: inherit;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  outline: none;
+}
+
+button:focus-visible {
+  outline: 2px solid #059669;
+  outline-offset: 2px;
+}
+
+/* Scrollbar styling */
+::-webkit-scrollbar {
+  width: 8px;
+  height: 8px;
+}
+
+::-webkit-scrollbar-track {
+  background: #f1f5f9;
+}
+
+::-webkit-scrollbar-thumb {
+  background: #cbd5e1;
+  border-radius: 4px;
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background: #94a3b8;
+}

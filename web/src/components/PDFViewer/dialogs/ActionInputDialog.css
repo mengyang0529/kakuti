@@ -1,0 +1,190 @@
+.action-input-dialog {
+  width: 400px; /* make dialog a bit wider so input is longer */
+  background: #fff;
+  border: 1px solid #e5e7eb;
+  border-radius: 12px;
+  box-shadow: 0 12px 32px rgba(0,0,0,0.18);
+  /* unify selection color with app highlight default (light green) */
+  --aid-selection-bg: rgba(144, 238, 144, 0.4);
+  --aid-selection-fg: inherit;
+}
+
+/* Ensure any text selection inside the dialog uses the highlight color */
+.action-input-dialog ::selection {
+  background-color: var(--aid-selection-bg) !important;
+  color: var(--aid-selection-fg) !important;
+}
+.action-input-dialog ::-moz-selection {
+  background-color: var(--aid-selection-bg) !important;
+  color: var(--aid-selection-fg) !important;
+}
+
+.aid-header {
+  display: none;     /* hide header entirely */
+  padding: 0;
+  border: none;
+  height: 0;
+}
+
+.aid-title { display: none; }
+.aid-close { display: none; }
+
+.aid-body {
+  padding: 6px 8px 0 8px; /* move content slightly left */
+  position: relative;
+}
+
+.aid-input-wrap {
+  position: relative; /* anchor send button to the input height */
+}
+
+.aid-input {
+  width: 100%;
+  height: 36px; /* slightly shorter input */
+  border: 1px solid #e2e8f0;
+  border-radius: 8px;
+  padding: 8px 60px 8px 8px; /* leave space for text SEND button */
+  font-size: 14px;
+  line-height: 1.4;
+  outline: none;
+  background: #fff;
+  color: #0f172a;
+  box-sizing: border-box;
+  display: flex;
+  align-items: center;
+  white-space: nowrap;        /* keep single line */
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+/* Match app highlight default for text selection inside the input */
+/* Extra specificity for inputs (some UAs are stubborn) */
+.action-input-dialog .aid-input::selection {
+  background-color: var(--aid-selection-bg) !important;
+  color: var(--aid-selection-fg) !important;
+}
+.action-input-dialog .aid-input::-moz-selection {
+  background-color: var(--aid-selection-bg) !important;
+  color: var(--aid-selection-fg) !important;
+}
+
+/* Placeholder for contenteditable */
+.aid-input:empty:before {
+  content: attr(data-placeholder);
+  color: #94a3b8; /* slate-400 */
+  pointer-events: none;
+}
+
+.aid-input:focus {
+  border-color: #e2e8f0; /* keep neutral, no green */
+  box-shadow: none;
+  outline: none;
+}
+
+.aid-selected-hint {
+  margin-top: 8px;
+  font-size: 12px;
+  color: #64748b;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.aid-footer {
+  display: flex;
+  justify-content: flex-start; /* move icons to the left */
+  gap: 8px;
+  padding: 6px 8px 4px; /* move buttons slightly left */
+}
+
+.aid-send-btn {
+  position: absolute;
+  right: 8px;                   /* consistent inner gap */
+  top: 50%;                     /* vertically center within input wrapper */
+  transform: translateY(-50%);
+  height: 28px;                 /* match input height visually */
+  min-width: 48px;              /* fit text 'send' comfortably */
+  padding: 0 8px;               /* horizontal breathing room */
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  border: none;
+  border-radius: 6px;           /* rounded rectangle button */
+  background: #059669; /* match bottom-send */
+  color: white;
+  cursor: pointer;
+  line-height: 0;
+  overflow: hidden;             /* clip any svg overflow */
+  box-sizing: border-box;
+  white-space: nowrap;          /* keep label on one line */
+  font-size: 12px;
+  line-height: 1;               /* avoid vertical jitter */
+  font-weight: 600;
+}
+
+.aid-send-btn:hover { filter: brightness(1.02); }
+.aid-send-btn:disabled { opacity: .6; cursor: not-allowed; }
+
+.aid-send-btn svg {
+  display: block;
+  width: 14px;                  /* compact icon for 28px button */
+  height: 14px;
+  pointer-events: none;
+}
+
+.aid-send-btn svg *,
+.aid-send-btn svg path,
+.aid-send-btn svg line,
+.aid-send-btn svg polygon {
+  stroke-width: 1.8;
+}
+
+.aid-btn {
+  padding: 6px 10px;
+  border-radius: 8px;
+  border: 1px solid #e2e8f0;
+  background: #f8fafc;
+  color: #0f172a;
+  font-size: 13px;
+  cursor: pointer;
+}
+
+.aid-btn:hover {
+  background: #eef2f7;
+}
+
+/* Icon-only buttons */
+.aid-icon-btn {
+  width: 32px;
+  height: 32px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 8px;
+  border: 1px solid #e2e8f0;
+  background: #f8fafc;
+  cursor: pointer;
+  padding: 0;
+  box-sizing: border-box;
+  line-height: 0; /* prevent inline SVG baseline overflow */
+  overflow: hidden; /* clip any overflow from thick strokes */
+}
+
+.aid-icon-btn:hover {
+  background: #eef2f7;
+}
+
+/* Normalize SVG size inside icon buttons */
+.aid-icon-btn svg {
+  width: 14px !important;
+  height: 14px !important;
+  display: block; /* remove inline baseline space */
+}
+
+.aid-icon-btn svg *,
+.aid-icon-btn svg path,
+.aid-icon-btn svg line,
+.aid-icon-btn svg rect,
+.aid-icon-btn svg circle {
+  stroke-width: 1.6 !important;
+}

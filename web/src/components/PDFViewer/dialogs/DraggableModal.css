@@ -1,0 +1,75 @@
+/* Draggable Modal Styles */
+.draggable-modal {
+  background: white;
+  border-radius: 8px;
+  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.12), 0 2px 8px rgba(0, 0, 0, 0.08);
+  border: 1px solid #e1e5e9;
+  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+  user-select: none;
+  cursor: default;
+  transition: box-shadow 0.15s ease;
+}
+
+/* Enhanced shadow when dragging */
+.draggable-modal.dragging {
+  box-shadow: 0 16px 48px rgba(0, 0, 0, 0.2), 0 4px 16px rgba(0, 0, 0, 0.12);
+  user-select: none;
+}
+
+/* Draggable header should have grab cursor */
+.draggable-modal-header {
+  cursor: grab;
+  user-select: none;
+}
+
+.draggable-modal.dragging .draggable-modal-header {
+  cursor: grabbing;
+}
+
+/* Prevent text selection during drag */
+.draggable-modal.dragging,
+.draggable-modal.dragging * {
+  user-select: none !important;
+  -webkit-user-select: none !important;
+  -moz-user-select: none !important;
+  -ms-user-select: none !important;
+}
+
+/* Animation for modal appearance */
+.draggable-modal {
+  animation: draggable-modal-appear 0.15s ease-out;
+}
+
+@keyframes draggable-modal-appear {
+  from {
+    opacity: 0;
+    transform: translateY(-8px) scale(0.95);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0) scale(1);
+  }
+}
+
+/* High contrast mode support */
+@media (prefers-contrast: high) {
+  .draggable-modal {
+    border: 2px solid #000;
+  }
+}
+
+/* Reduced motion support */
+@media (prefers-reduced-motion: reduce) {
+  .draggable-modal {
+    animation: none;
+    transition: none;
+  }
+}
+
+/* Touch device optimizations */
+@media (pointer: coarse) {
+  .draggable-modal-header {
+    /* Larger touch target for mobile */
+    min-height: 44px;
+  }
+}

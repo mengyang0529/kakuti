@@ -1,0 +1,93 @@
+.doc-preview-card {
+  display: inline-flex;
+  flex-direction: column;
+  gap: 6px;
+  padding: 8px;
+  border-radius: 10px;
+  background: rgba(255,255,255,0.9);
+  border: 1px solid #e5f3f0;
+  box-shadow: 0 6px 18px rgba(0,0,0,0.12);
+  position: relative; /* anchor delete button */
+}
+
+.doc-preview-card.clickable {
+  cursor: pointer;
+  transition: transform 0.15s ease, box-shadow 0.15s ease;
+}
+
+.doc-preview-card.clickable:focus {
+  outline: 2px solid #10b981;
+  outline-offset: 2px;
+}
+
+.doc-preview-card.clickable:hover {
+  transform: translateY(-1px);
+  box-shadow: 0 10px 24px rgba(0,0,0,0.15);
+}
+
+.doc-preview-thumb {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: #f9fafb;
+  border-radius: 6px;
+  overflow: hidden;
+  height: 200px; /* unify preview height for PDF and Note cards */
+}
+
+.doc-preview-loading {
+  font-size: 0.85rem;
+  color: #059669;
+  padding: 8px 12px;
+}
+
+.doc-preview-meta {
+  font-size: 0.85rem;
+  color: #374151;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  max-width: 100%;
+}
+
+/* Make delete button visible on preview card */
+.doc-preview-card .delete-btn {
+  position: absolute;
+  top: 6px;
+  right: 6px;
+  z-index: 10;
+  background: none;
+  border: none;
+  border-radius: 50%;
+  padding: 4px;
+  cursor: pointer;
+  width: 28px;
+  height: 28px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: background-color 0.2s, opacity 0.2s;
+  opacity: 0.85;
+}
+
+.doc-preview-card .delete-btn:hover {
+  background-color: #fee2e2;
+}
+
+.doc-preview-card .delete-btn svg {
+  width: 20px;
+  height: 20px;
+  fill: #94a3b8;
+  transition: fill 0.2s;
+}
+
+.doc-preview-card .delete-btn:hover svg {
+  fill: #ef4444;
+}
+
+.preview-floating {
+  position: absolute;
+  top: 12px;
+  right: 12px;
+  z-index: 1001;
+}

@@ -1,0 +1,844 @@
+/* Consolidated PDF Viewer Styles - All components merged */
+
+/* Main PDF viewer container styles */
+.pdf-viewer {
+  width: 100%;
+  max-width: none; /* allow occupying full grid column width */
+  background: white;
+  border-radius: 12px;
+  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.1);
+  overflow: visible;
+  border: 1px solid #e5f3f0;
+  position: relative; /* anchor for absolute children like zoom */
+  /* Remove all paddings/margins so scrollbars hug content */
+  padding: 0;
+  margin: 0;
+  height: 100%;             /* fill parent pane height */
+  display: flex;
+  flex-direction: column;
+}
+
+/* Disable context menu on PDF document container */
+.pdf-document-container {
+  -webkit-touch-callout: none;
+  -webkit-user-select: text;
+  -moz-user-select: text;
+  -ms-user-select: text;
+  user-select: text;
+  /* Allow scrolling while preventing text selection popup */
+  -ms-touch-action: auto;
+  touch-action: auto;
+  padding: 0; /* no top space */
+  display: flex;
+  justify-content: center; /* center align for proper zoom anchoring */
+  background: #fafafa;
+  min-height: 0;
+  height: 100vh;           /* stretch to viewer bottom */
+  flex: 1 1 auto;         /* allow to grow and enable inner scroll */
+  position: relative;
+  overflow-y: scroll;
+  overflow-x: auto; /* show horizontal scrollbar when content overflows */
+  /* No extra right padding; toolbar floats and won't block scrollbar */
+  padding-right: 0;
+}
+
+.pdf-document-container * {
+  -webkit-touch-callout: none;
+  /* Additional prevention for Chromium/Edge browsers */
+  -webkit-context-menu: none;
+  -moz-context-menu: none;
+  /* Allow scrolling while preventing text selection popup */
+  -ms-touch-action: auto;
+  touch-action: auto;
+}
+
+/* Force crosshair cursor in screenshot mode */
+.pdf-document-container[style*="crosshair"] * {
+  cursor: crosshair !important;
+}
+
+.pdf-document-container[style*="crosshair"] .react-pdf__Page__textContent {
+  cursor: crosshair !important;
+  pointer-events: none;
+}
+
+.pdf-document-container[style*="crosshair"] .react-pdf__Page__textContent span {
+  cursor: crosshair !important;
+}
+
+/* Magic wand cursor in magic wand mode */
+.pdf-document-container[data-tool-mode="magicwand"] * {
+  cursor: url('data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" width="32" height="32" viewBox="0 0 32 32" fill="%2300A693" role="img" aria-label="Magic wand with halo stars"><defs><path id="star" d="M0,-2 L0.59,-0.61 L1.91,-0.61 L0.81,0.24 L1.18,1.61 L0,0.9 L-1.18,1.61 L-0.81,0.24 L-1.91,-0.61 L-0.59,-0.61 Z" fill="%2300A693"/></defs><g transform="translate(10,10) rotate(45)"><rect x="0" y="-1.33" width="20" height="2.67" rx="1.33" fill="%2300A693"/><rect x="-2" y="-1.33" width="4.67" height="2.67" rx="1.33" fill="%2300A693"/></g><g transform="translate(10,10)"><use href="%23star" transform="translate(0,-5.6) scale(1.87)"/><use href="%23star" transform="translate(5,-1.6) scale(1.67)"/><use href="%23star" transform="translate(3.6,8.8) scale(1.53)"/><use href="%23star" transform="translate(-3.2,5.2) scale(1.73)"/><use href="%23star" transform="translate(-5.6,-1.6) scale(1.60)"/></g></svg>') 13 10, auto !important;
+}
+
+.pdf-document-container[data-tool-mode="magicwand"] .react-pdf__Page__textContent {
+  cursor: url('data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" width="32" height="32" viewBox="0 0 32 32" fill="%2300A693" role="img" aria-label="Magic wand with halo stars"><defs><path id="star" d="M0,-2 L0.59,-0.61 L1.91,-0.61 L0.81,0.24 L1.18,1.61 L0,0.9 L-1.18,1.61 L-0.81,0.24 L-1.91,-0.61 L-0.59,-0.61 Z" fill="%2300A693"/></defs><g transform="translate(10,10) rotate(45)"><rect x="0" y="-1.33" width="20" height="2.67" rx="1.33" fill="%2300A693"/><rect x="-2" y="-1.33" width="4.67" height="2.67" rx="1.33" fill="%2300A693"/></g><g transform="translate(10,10)"><use href="%23star" transform="translate(0,-5.6) scale(1.87)"/><use href="%23star" transform="translate(5,-1.6) scale(1.67)"/><use href="%23star" transform="translate(3.6,8.8) scale(1.53)"/><use href="%23star" transform="translate(-3.2,5.2) scale(1.73)"/><use href="%23star" transform="translate(-5.6,-1.6) scale(1.60)"/></g></svg>') 13 10, auto !important;
+  pointer-events: none;
+}
+
+/* Magic wand layer styles */
+.magic-wand-layer {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  pointer-events: none;
+  z-index: 5;
+}
+
+.magic-wand-layer path {
+  transition: opacity 0.2s ease;
+}
+
+.magic-wand-layer path:hover {
+  opacity: 1 !important;
+}
+
+/* Magic wand sparkle animations */
+@keyframes sparkle {
+  0%, 100% { opacity: 0.3; transform: scale(0.8); }
+  50% { opacity: 1; transform: scale(1.2); }
+}
+
+.magic-wand-sparkle {
+  animation: sparkle 1.5s ease-in-out infinite;
+}
+
+.pdf-document-container[data-tool-mode="magicwand"] .react-pdf__Page__textContent span {
+  cursor: url('data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" width="32" height="32" viewBox="0 0 32 32" fill="%2300A693" role="img" aria-label="Magic wand with halo stars"><defs><path id="star" d="M0,-2 L0.59,-0.61 L1.91,-0.61 L0.81,0.24 L1.18,1.61 L0,0.9 L-1.18,1.61 L-0.81,0.24 L-1.91,-0.61 L-0.59,-0.61 Z" fill="%2300A693"/></defs><g transform="translate(10,10) rotate(45)"><rect x="0" y="-1.33" width="20" height="2.67" rx="1.33" fill="%2300A693"/><rect x="-2" y="-1.33" width="4.67" height="2.67" rx="1.33" fill="%2300A693"/></g><g transform="translate(10,10)"><use href="%23star" transform="translate(0,-5.6) scale(1.87)"/><use href="%23star" transform="translate(5,-1.6) scale(1.67)"/><use href="%23star" transform="translate(3.6,8.8) scale(1.53)"/><use href="%23star" transform="translate(-3.2,5.2) scale(1.73)"/><use href="%23star" transform="translate(-5.6,-1.6) scale(1.60)"/></g></svg>') 13 10, auto !important;
+  pointer-events: none;
+}
+
+/* Ensure all PDF child elements don't interfere with magic wand events */
+.pdf-document-container[data-tool-mode="magicwand"] .react-pdf__Page > * {
+  pointer-events: none;
+}
+
+/* But allow the page container itself to receive events */
+.pdf-document-container[data-tool-mode="magicwand"] .react-pdf__Page {
+  pointer-events: auto;
+}
+
+.all-pages-container {
+  display: flex;
+  flex-direction: column;
+  gap: 0.75rem;
+  align-items: center; /* Center align pages for proper zoom anchoring */
+  width: 100%;
+  /* Remove margins so content sits closer to scrollbar */
+  margin: 0;
+  padding: 0;
+  /* Set transform origin to center for zoom operations */
+  transform-origin: center center;
+}
+
+.page-container {
+  position: relative;
+  display: inline-block;
+  background: white;
+  box-shadow: 0 1px 4px rgba(0, 0, 0, 0.05);
+  border: 1px solid rgba(0, 0, 0, 0.03);
+  border-radius: 1px;
+  overflow: visible;
+  margin: 0; /* Remove all margins */
+  /* Remove max-width so page container sits tight to content */
+  max-width: 100%;
+  /* Set transform origin to center for zoom operations */
+  transform-origin: center center;
+}
+
+/* PDF.js canvas styling for crisp text */
+.react-pdf__Page__canvas {
+  border-radius: 1px;
+  image-rendering: -webkit-optimize-contrast;
+  image-rendering: crisp-edges;
+  image-rendering: pixelated;
+}
+
+/* Text layer styling for clear text */
+.react-pdf__Page__textContent {
+  user-select: text;
+  cursor: text;
+  position: absolute;
+  z-index: 3; /* keep text above highlight overlays to ensure consistent color */
+}
+
+.react-pdf__Page__textContent span {
+  color: transparent;
+  cursor: text;
+  user-select: text;
+}
+
+/* Ensure PDF page has proper positioning context for highlights */
+.react-pdf__Page {
+  position: relative !important;
+  display: block;
+  /* Remove margins so page fully hugs container */
+  margin: 0;
+  /* Set transform origin to center for zoom operations */
+  transform-origin: center center;
+}
+
+/* Specific PDF page styles to improve alignment */
+.pdf-page {
+  display: flex;
+  justify-content: center; /* center the page within container */
+  width: 100%;
+  margin: 0;
+  padding: 0;
+}
+
+/* Loading and error states */
+.loading {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  padding: 3rem;
+  color: #059669;
+  font-size: 1.1rem;
+  font-weight: 500;
+}
+
+.error {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  padding: 3rem;
+  color: #dc2626;
+  font-size: 1.1rem;
+  background: #fef2f2;
+  border: 1px solid #fecaca;
+  border-radius: 8px;
+  margin: 1rem;
+}
+
+/* Selection styling */
+::selection {
+  background-color: rgba(34, 197, 94, 0.4);
+}
+
+::-moz-selection {
+  background-color: rgba(34, 197, 94, 0.4);
+}
+
+/* Vertical Toolbar centered (original floating style) */
+.vertical-toolbar {
+  position: absolute;
+  right: 12px; /* nudged closer to the right edge */
+  top: calc(50% + 100px);
+  transform: translateY(-50%);
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  background: rgba(255, 255, 255, 0.95);
+  padding: 8px 4px;
+  border-radius: 12px;
+  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.15);
+  border: 1px solid #e5f3f0;
+  backdrop-filter: blur(10px);
+  z-index: 9999;
+}
+
+.toolbar-btn {
+  width: 36px;
+  height: 36px;
+  border-radius: 50%;
+  background: transparent;
+  border: none;
+  cursor: pointer;
+  font-size: 10px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  transition: all 0.2s ease;
+  color: #333;
+  box-shadow: none;
+  pointer-events: auto;
+  position: relative;
+  z-index: 10000;
+}
+
+.toolbar-btn svg {
+  width: 24px;
+  height: 24px;
+  transition: all 0.2s ease;
+}
+
+.btn-label {
+  font-size: 8px;
+  font-weight: bold;
+  color: #333;
+  margin-top: 1px;
+  line-height: 1;
+}
+
+.toolbar-btn:hover {
+  background: rgba(59, 130, 246, 0.12); /* light blue hover */
+  transform: scale(1.05);
+}
+
+.toolbar-btn.active {
+  background: rgba(59, 130, 246, 0.15); /* light blue active */
+  color: #2563eb; /* blue-600 for icon/text */
+}
+
+.toolbar-btn.active svg {
+  color: #2563eb;
+}
+
+.toolbar-btn.active .btn-label {
+  color: #2563eb;
+}
+
+/* Context Menu */
+.context-menu {
+  background: rgba(255, 255, 255, 0.98);
+  border: 1px solid #e5f3f0;
+  border-radius: 8px;
+  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.15);
+  backdrop-filter: blur(10px);
+  padding: 4px;
+  min-width: 120px;
+  z-index: 10000;
+  pointer-events: auto;
+}
+
+.context-menu-item {
+  width: 100%;
+  padding: 8px 12px;
+  background: transparent;
+  border: none;
+  border-radius: 4px;
+  cursor: pointer;
+  font-size: 12px;
+  color: #333;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  transition: background-color 0.2s ease;
+  text-align: left;
+}
+
+.context-menu-item:hover {
+  background: rgba(0, 0, 0, 0.05);
+}
+
+.context-menu-item svg {
+  flex-shrink: 0;
+}
+
+/* Search Panel */
+.search-panel {
+  position: absolute;
+  right: 12px;
+  top: calc(50% + 180px);
+  transform: translateY(-50%);
+  width: 200px;
+  background: rgba(255, 255, 255, 0.98);
+  border: 1px solid #e5f3f0;
+  border-radius: 16px;
+  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.15);
+  backdrop-filter: blur(10px);
+  z-index: 10050; /* above vertical toolbar and buttons */
+  padding: 16px;
+}
+
+.search-panel-header {
+  cursor: move;
+  user-select: none;
+  -webkit-user-select: none;
+  font-weight: 600;
+  color: #334155;
+  margin: -8px -8px 8px -8px;
+  padding: 8px 12px;
+  border-bottom: 1px dashed #e2e8f0;
+}
+
+.search-input-container {
+  margin-bottom: 12px;
+}
+
+.search-input {
+  width: 100%;
+  padding: 8px 10px;
+  border: 2px solid #e2e8f0;
+  border-radius: 6px;
+  font-size: 12px;
+  outline: none;
+  transition: border-color 0.2s ease;
+  box-sizing: border-box;
+}
+
+.search-input:focus {
+  border-color: #059669;
+}
+
+.search-results {
+  border-top: 1px solid #e2e8f0;
+  padding-top: 12px;
+}
+
+.search-info {
+  font-size: 11px;
+  color: #64748b;
+  margin-bottom: 8px;
+  text-align: center;
+}
+
+.search-navigation {
+  display: flex;
+  gap: 6px;
+  justify-content: center;
+}
+
+.search-nav-btn {
+  padding: 4px 8px;
+  background: #059669;
+  color: white;
+  border: none;
+  border-radius: 4px;
+  cursor: pointer;
+  font-size: 10px;
+  transition: background-color 0.2s ease;
+}
+
+.search-nav-btn:hover {
+  background: #047857;
+}
+
+.search-nav-btn:disabled {
+  background: #d1d5db;
+  cursor: not-allowed;
+}
+
+/* Floating zoom controls in bottom-right corner */
+.floating-zoom-controls {
+  position: absolute; /* inside the PDF frame */
+  top: 12px;   /* move to top-left */
+  left: 12px;
+  transform: none;
+  display: flex;
+  flex-direction: row; /* horizontal layout */
+  align-items: center;
+  gap: 0.5rem;
+  background: rgba(255, 255, 255, 0.95);
+  padding: 0.5rem 0.8rem;
+  border-radius: 20px;
+  box-shadow: 0 3px 15px rgba(0, 0, 0, 0.12);
+  border: 1px solid #e5f3f0;
+  backdrop-filter: blur(10px);
+  z-index: 1000;
+}
+
+.zoom-btn {
+  width: 24px;
+  height: 24px;
+  min-width: 24px;
+  min-height: 24px;
+  max-width: 24px;
+  max-height: 24px;
+  border-radius: 50%;
+  background: #059669;
+  color: white;
+  border: none;
+  cursor: pointer;
+  font-size: 0.7rem;
+  font-weight: bold;
+  font-family: inherit;
+  line-height: 1;
+  transition: all 0.2s ease;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  box-shadow: 0 1px 4px rgba(5, 150, 105, 0.25);
+  flex-shrink: 0;
+  flex-grow: 0;
+  box-sizing: border-box;
+  padding: 0;
+  margin: 0;
+  text-align: center;
+  vertical-align: middle;
+  overflow: hidden;
+}
+
+.zoom-btn:hover {
+  background: #047857;
+  transform: scale(1.05);
+}
+
+.zoom-btn:active {
+  transform: scale(0.95);
+}
+
+/* Three-line icon button (left of zoom) */
+.icon-btn {
+  width: 36px;
+  height: 24px;
+  min-width: 24px;
+  min-height: 24px;
+  padding: 0;
+  border: black;
+  background: rgba(243, 244, 246, 0.8);;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  transition: transform 0.2s ease;
+  flex-shrink: 0; /* prevent collapsing */
+}
+
+.icon-btn:hover {
+  transform: scale(1.05);
+}
+
+.outline-overlay {
+  position: absolute;
+  inset: 0;
+  z-index: 10050;
+  background: transparent;
+  display: flex;
+  align-items: center;
+  justify-content: flex-start;
+}
+
+.outline-sheet {
+  width: min(90%, 760px);
+  max-height: 70%;
+  background: rgba(0, 0, 0, 0.85); /* black semi-transparent */
+  color: #fff; /* white text for contrast */
+  border: 1px solid rgba(255,255,255,0.18);
+  border-top-left-radius: 12px;
+  border-top-right-radius: 12px;
+  box-shadow: 0 -8px 24px rgba(0,0,0,0.35);
+  overflow: hidden;
+  animation: sheetUp 200ms ease-out;
+}
+
+@keyframes sheetUp {
+  0% { transform: translateY(12px); opacity: 0; }
+  100% { transform: translateY(0); opacity: 1; }
+}
+
+.outline-sheet-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 10px 14px;
+  border-bottom: 1px solid rgba(255,255,255,0.18);
+  font-weight: 600;
+  color: #fff;
+}
+
+.outline-close {
+  border: none;
+  background: transparent;
+  cursor: pointer;
+  font-size: 18px;
+  color: #fff;
+}
+
+.outline-close:hover {
+  color: #10b981; /* emerald-500 on hover */
+}
+
+.outline-sheet-body {
+  max-height: calc(70vh - 44px);
+  overflow: auto;
+  padding: 10px 14px 14px 14px;
+  color: #fff;
+}
+
+.outline-list, .outline-sublist {
+  list-style: none;
+  padding: 0;
+  margin: 0;
+}
+
+.outline-item { margin: 6px 0; }
+.outline-sublist { margin-left: 14px; padding-left: 10px; border-left: 1px dashed rgba(255,255,255,0.25); }
+
+.outline-link {
+  width: 100%;
+  text-align: left;
+  background: transparent;
+  border: none;
+  padding: 6px 8px;
+  border-radius: 6px;
+  cursor: pointer;
+  color: #fff;
+}
+
+.outline-link:hover { background: rgba(255,255,255,0.12); }
+
+.zoom-info {
+  font-size: 0.75rem;
+  color: #374151;
+  font-weight: 500;
+  padding: 0.2rem 0.4rem;
+  background: rgba(243, 244, 246, 0.8);
+  border-radius: 8px;
+  min-width: 40px;
+  text-align: center;
+  white-space: nowrap;
+  flex-shrink: 0;
+}
+
+.page-indicator {
+  font-size: 0.75rem;
+  color: #374151;
+  font-weight: 500;
+  padding: 0.2rem 0.4rem;
+  background: rgba(243, 244, 246, 0.8);
+  border-radius: 8px;
+  min-width: 40px;
+  text-align: center;
+  white-space: nowrap;
+  flex-shrink: 0;
+}
+
+/* Search highlight styles */
+.search-highlight-wrapper {
+  background-color: rgba(34, 197, 94, 0.35) !important; /* emerald-500 @ 35% */
+  border-radius: 2px;
+  padding: 0 1px;
+}
+
+.search-highlight-current {
+  background-color: rgba(34, 197, 94, 0.7) !important;
+  box-shadow: 0 0 0 1px rgba(16, 185, 129, 0.9) inset; /* emerald-400 border */
+  font-weight: bold;
+}
+
+/* Screenshot overlay */
+.screenshot-overlay {
+  position: absolute;
+  border: 2px dashed #059669;
+  background-color: rgba(5, 150, 105, 0.1);
+  pointer-events: none;
+  z-index: 1000;
+}
+
+/* (Removed legacy highlight classes: permanent-highlight, text-highlight, highlights-layer) */
+
+/* Responsive design */
+@media (max-width: 768px) {
+  .pdf-viewer {
+    margin: 0 1rem;
+  }
+  
+  .pdf-document-container {
+    padding: 0.75rem;
+    padding-right: 40px; /* smaller gutter on mobile */
+  }
+  
+  .floating-zoom-controls {
+    top: 0.75rem;
+    left: 0.75rem;
+    padding: 0.4rem 0.6rem;
+    gap: 0.4rem;
+  }
+  
+  .zoom-btn {
+    width: 20px;
+    height: 20px;
+    min-width: 20px;
+    min-height: 20px;
+    max-width: 20px;
+    max-height: 20px;
+    font-size: 0.6rem;
+    line-height: 1;
+    padding: 0;
+    margin: 0;
+    box-sizing: border-box;
+    text-align: center;
+    vertical-align: middle;
+    overflow: hidden;
+  }
+  
+  .floating-zoom-controls .zoom-info,
+  .page-indicator {
+    font-size: 0.7rem;
+    padding: 0.1rem 0.3rem;
+    min-width: 32px;
+  }
+  
+  /* Mobile adjustments for vertical toolbar */
+  .vertical-toolbar {
+    right: 0;
+    top: 0;
+    bottom: 0;
+    padding: 6px 4px;
+    gap: 6px;
+    width: 40px; /* slightly smaller on mobile */
+  }
+  
+  .toolbar-btn {
+    width: 28px;
+    height: 28px;
+  }
+  
+  .toolbar-btn svg {
+    width: 14px;
+    height: 14px;
+  }
+  
+  .btn-label {
+    font-size: 7px;
+  }
+  
+  /* Mobile search panel adjustments */
+  .search-panel {
+    right: 15px;
+    top: calc(50% + 120px);
+    width: 180px;
+    padding: 12px;
+  }
+  
+  .search-input {
+    font-size: 11px;
+    padding: 6px 8px;
+  }
+  
+  .search-info {
+    font-size: 10px;
+  }
+  
+  .search-nav-btn {
+    font-size: 9px;
+    padding: 3px 6px;
+  }
+}
+
+@media (max-width: 480px) {
+  .pdf-viewer {
+    margin: 0 0.5rem;
+  }
+  
+  .pdf-document-container {
+    padding: 0.5rem;
+    padding-right: 36px; /* smaller gutter on very small screens */
+  }
+  
+  .vertical-toolbar {
+    right: 0;
+    top: 0;
+    bottom: 0;
+    width: 36px; /* even smaller on very small screens */
+    padding: 4px 3px;
+    gap: 4px;
+  }
+  
+  .toolbar-btn {
+    width: 24px;
+    height: 24px;
+  }
+  
+  .toolbar-btn svg {
+    width: 12px;
+    height: 12px;
+  }
+  
+  .search-panel {
+    right: 10px;
+    top: calc(50% + 80px);
+    width: 160px;
+  }
+}
+
+/* Highlight Styles */
+.highlight-overlay {
+  transition: opacity 0.2s ease;
+}
+
+.highlight-overlay:hover {
+  opacity: 0.6;
+}
+
+.highlight-overlay:hover {
+  background-color: rgba(34, 197, 94, 0.18);
+}
+
+/* Highlight popover */
+.highlight-popover {
+  pointer-events: auto;
+}
+
+/* Color menu styles */
+.highlight-color-trigger:hover {
+  background: #f9fafb;
+}
+
+.highlight-color-menu .highlight-color-swatch:hover {
+  box-shadow: 0 0 0 2px rgba(59,130,246,0.35) inset;
+}
+
+/* Copy feedback animation */
+.copy-feedback {
+  position: absolute;
+  top: -22px;
+  left: 0;
+  padding: 2px 8px;
+  font-size: 11px;
+  color: #065f46;
+  background: #d1fae5; /* green-100 */
+  border: 1px solid #a7f3d0; /* green-200 */
+  border-radius: 9999px;
+  box-shadow: 0 2px 8px rgba(0,0,0,0.08);
+  animation: copyPulse 900ms ease-out forwards;
+  pointer-events: none;
+}
+
+@keyframes copyPulse {
+  0% { transform: translateY(6px) scale(0.96); opacity: 0; }
+  20% { transform: translateY(0) scale(1); opacity: 1; }
+  80% { opacity: 1; }
+  100% { transform: translateY(-2px); opacity: 0; }
+}
+
+/* Screen reader only content */
+.sr-only {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  padding: 0;
+  margin: -1px;
+  overflow: hidden;
+  clip: rect(0, 0, 0, 0);
+  white-space: nowrap;
+  border: 0;
+}
+
+/* Highlight mode cursor */
+.pdf-document-container.highlight-mode {
+  cursor: text;
+}
+
+.pdf-document-container.highlight-mode * {
+  cursor: text !important;
+}
+
+/* Selection styles in highlight mode */
+.pdf-document-container.highlight-mode ::selection {
+  background-color: rgba(144, 238, 144, 0.4);
+  color: inherit;
+}
+
+.pdf-document-container.highlight-mode ::-moz-selection {
+  background-color: rgba(144, 238, 144, 0.4);
+  color: inherit;
+}
+
+/* Highlight toolbar button active state */
+.toolbar-btn.highlight-active {
+  background: rgba(59, 130, 246, 0.15);
+  color: #2563eb;
+  box-shadow: none;
+}
+
+.toolbar-btn.highlight-active:hover {
+  background: rgba(59, 130, 246, 0.12);
+  transform: translateY(-1px);
+  box-shadow: none;
+}

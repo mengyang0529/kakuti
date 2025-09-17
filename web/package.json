@@ -1,0 +1,30 @@
+{
+  "name": "web",
+  "private": true,
+  "version": "0.0.0",
+  "type": "module",
+  "scripts": {
+    "dev": "vite",
+    "dev:ui": "vite --mode ui",
+    "build": "vite build",
+    "postbuild": "node scripts/postbuild.mjs",
+    "build:ui": "vite build --mode ui",
+    "preview": "vite preview",
+    "preview:ui": "vite preview --mode ui"
+  },
+  "dependencies": {
+    "html2canvas": "^1.4.1",
+    "pdfjs-dist": "^5.4.54",
+    "react": "^19.1.1",
+    "react-dom": "^19.1.1",
+    "react-markdown": "^10.1.0",
+    "react-pdf": "^7.7.1",
+    "remark-gfm": "^4.0.1"
+  },
+  "devDependencies": {
+    "@types/react": "^19.1.10",
+    "@types/react-dom": "^19.1.7",
+    "@vitejs/plugin-react": "^5.0.0",
+    "vite": "^7.1.2"
+  }
+}

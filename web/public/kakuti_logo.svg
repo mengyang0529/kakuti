@@ -1,0 +1,11 @@
+<svg width="200" height="200" viewBox="0 -5 100 110" xmlns="http://www.w3.org/2000/svg" role="img" aria-label="Kakuti hexagon icon">
+   <style>
+     .hexStroke { fill:none; stroke:#0F766E; stroke-width:7; stroke-linejoin:round; }
+     .dot { fill:#0F766E; }
+   </style>
+
+   <!-- Hexagon outline (vertical hexagon, like pencil cross-section) -->
+   <path class="hexStroke" d="M40,0 L80,23 L80,69 L40,92 L0,69 L0,23 Z"/>
+   <!-- Center dot (pencil core) -->
+   <circle class="dot" cx="40" cy="46" r="8"/>
+</svg>

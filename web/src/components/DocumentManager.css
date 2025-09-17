@@ -1,0 +1,136 @@
+/* The .document-manager container is now visually empty, acting as a simple wrapper */
+
+/* Flexbox layout for the cards */
+.document-list {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 24px;
+}
+
+/* Card styles */
+.document-card {
+  position: relative; /* For positioning the delete button */
+  width: 240px; /* Fixed width */
+  height: 150px; /* Fixed height */
+  background: white;
+  border: 1px solid #e2e8f0;
+  border-radius: 12px;
+  overflow: hidden; /* Re-hide overflow for clean shape */
+  display: flex;
+  flex-direction: column;
+  cursor: pointer;
+  transition: transform 0.2s ease, box-shadow 0.2s ease;
+}
+
+.document-card:hover {
+  transform: translateY(-5px);
+  box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05);
+}
+
+.card-content {
+  padding: 16px;
+  flex-grow: 1;
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between; /* Push meta to bottom */
+}
+
+.card-title {
+  font-weight: 600;
+  font-size: 16px;
+  color: #1e293b;
+  margin: 0;
+  padding-right: 24px; /* Ensure title doesn't overlap with delete button */
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.card-meta {
+  font-size: 12px;
+  color: #64748b;
+  display: flex;
+  justify-content: space-between;
+}
+
+/* New flat delete button */
+.delete-btn {
+  position: absolute;
+  top: 8px;
+  right: 8px;
+  background: none;
+  border: none;
+  border-radius: 50%;
+  padding: 4px;
+  cursor: pointer;
+  width: 28px;
+  height: 28px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: background-color 0.2s, opacity 0.2s;
+  opacity: 0.5; /* Make it subtle */
+}
+
+.document-card:hover .delete-btn {
+  opacity: 1; /* Show on hover */
+}
+
+.delete-btn:hover {
+  background-color: #fee2e2;
+}
+
+.delete-btn svg {
+  width: 20px;
+  height: 20px;
+  fill: #94a3b8;
+  transition: fill 0.2s;
+}
+
+.delete-btn:hover svg {
+  fill: #ef4444;
+}
+
+/* States */
+.no-documents, .loading, .error {
+  width: 100%; /* Span all columns */
+  text-align: center;
+  padding: 48px;
+  color: #64748b;
+}
+
+/* Dark Mode */
+@media (prefers-color-scheme: dark) {
+  .document-card {
+    background: #1e293b;
+    border-color: #334155;
+  }
+
+  .document-card:hover {
+    border-color: #475569;
+  }
+
+  .card-title {
+    color: #f1f5f9;
+  }
+
+  .card-meta {
+    color: #94a3b8;
+  }
+  
+  .delete-btn:hover {
+    background-color: #7f1d1d;
+  }
+
+  .delete-btn svg {
+    fill: #64748b;
+  }
+
+  .delete-btn:hover svg {
+    fill: #fecaca;
+  }
+
+  .no-documents, .loading, .error {
+    color: #94a3b8;
+  }
+}

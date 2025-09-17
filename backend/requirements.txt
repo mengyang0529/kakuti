@@ -1,0 +1,21 @@
+fastapi==0.115.4
+uvicorn[standard]==0.32.0
+pydantic==2.9.2
+python-dotenv==1.0.1
+numpy==2.1.2
+httpx==0.27.2
+pillow==10.4.0
+pytesseract==0.3.13
+opencv-python-headless==4.10.0.84
+pymupdf==1.24.9
+python-multipart==0.0.12
+sentence-transformers==3.0.1
+loguru==0.7.2
+pytest==8.0.0
+google-generativeai==0.8.3
+google-cloud-storage==2.19.0
+# PostgreSQL and vector database dependencies
+psycopg2-binary==2.9.9
+pgvector==0.2.4
+# RAG dependencies
+tiktoken==0.7.0

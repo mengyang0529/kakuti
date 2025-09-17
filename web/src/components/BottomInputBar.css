@@ -1,0 +1,158 @@
+.bottom-input-bar {
+  position: fixed;               /* overlay at viewport bottom */
+  bottom: 16px;                  /* lift slightly above the bottom */
+  left: 50%;
+  transform: translateX(-50%);
+  width: min(560px, 50%);        /* shorter, still centered */
+  margin: 0;                     /* fixed positioned */
+  z-index: 20000;                /* ensure above PDF overlay */
+}
+
+.bottom-bar-inner {
+  display: flex;
+  gap: 2px;                      /* minimal spacing between controls */
+  padding: 2px 4px;              /* minimal inner padding */
+  background: rgba(255,255,255,0.95);
+  border: 1px solid #e5e7eb;
+  border-radius: 6px;            /* tighter radius */
+  box-shadow: 0 8px 24px rgba(0,0,0,0.08);
+  backdrop-filter: blur(6px);
+}
+
+.bottom-input {
+  flex: 1 1 auto;
+  min-width: 0;
+  border: none;                  /* remove inner stroke */
+  border-radius: 5px;
+  padding: 10px 12px;            /* comfortable padding */
+  font-size: 16px;
+  outline: none;                 /* no blue focus ring */
+  box-shadow: none;
+  resize: none;                  /* prevent manual resize */
+  min-height: 48px;              /* allow multiple lines */
+  max-height: 200px;             /* cap height */
+  line-height: 1.4;
+  overflow-y: auto;              /* scroll when too tall */
+  white-space: pre-wrap;         /* wrap long lines */
+  word-break: break-word;        /* break long words/URLs */
+}
+
+.bottom-input .placeholder {
+  color: #9ca3af;
+  pointer-events: none;
+}
+
+.bottom-input:empty:before {
+  content: attr(data-placeholder);
+  color: #9ca3af;
+  pointer-events: none;
+}
+
+.bottom-input:focus,
+.bottom-input:focus-visible {
+  outline: none;
+  box-shadow: none;
+}
+
+.bottom-send {
+  border: none;
+  background: #059669;
+  color: white;
+  border-radius: 5px;
+  width: 40px;                    /* square icon button */
+  height: 40px;
+  padding: 0;                     /* icon centered */
+  font-size: 14px;
+  font-weight: 600;
+  cursor: pointer;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  outline: none;                  /* remove blue outline */
+  -webkit-tap-highlight-color: transparent;
+}
+
+.bottom-send:focus,
+.bottom-send:focus-visible {
+  outline: none;
+  box-shadow: none;
+}
+
+.bottom-send:disabled { opacity: .6; cursor: not-allowed; }
+
+/* Document mention picker */
+.mention-picker {
+  position: absolute;
+  bottom: 100%;
+  left: 0;
+  right: 0;
+  margin-bottom: 8px;
+  background: white;
+  border: 1px solid #e5e7eb;
+  border-radius: 8px;
+  box-shadow: 0 10px 25px rgba(0, 0, 0, 0.15);
+  max-height: 300px;
+  overflow-y: auto;
+  z-index: 30000;
+}
+
+.mention-item {
+  padding: 12px 16px;
+  cursor: pointer;
+  border-bottom: 1px solid #f3f4f6;
+  transition: background-color 0.15s ease;
+}
+
+.mention-item:last-child {
+  border-bottom: none;
+}
+
+.mention-item:hover,
+.mention-item.active {
+  background-color: #f9fafb;
+}
+
+.mi-title {
+  font-weight: 500;
+  color: #374151;
+  font-size: 14px;
+  margin-bottom: 2px;
+}
+
+.mi-meta {
+  font-size: 12px;
+  color: #6b7280;
+}
+
+.doc-mention {
+  color: #2563eb;
+  font-size: 0.875em;
+  background-color: #eff6ff;
+  padding: 2px 6px;
+  border-radius: 4px;
+  border: 1px solid #bfdbfe;
+  user-select: none;
+  -webkit-user-select: none;
+}
+
+.mention-guard {
+  display: inline;
+  user-select: text;
+  -webkit-user-select: text;
+}
+
+.mention-item.no-results {
+  opacity: 0.7;
+  cursor: default;
+}
+
+.mention-item.no-results:hover {
+  background-color: transparent;
+}
+
+@media (max-width: 768px) {
+  .bottom-input-bar {
+    width: 92%;                 /* more compact on small screens */
+    bottom: 12px;
+  }
+}

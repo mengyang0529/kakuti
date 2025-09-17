@@ -1,0 +1,51 @@
+.resizer {
+  width: 12px;
+  background-color: #e5e7eb;
+  cursor: col-resize;
+  position: relative;
+  flex-shrink: 0;
+  transition: background-color 0.2s ease;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.resizer:hover {
+  background-color: #d1d5db;
+}
+
+.resizer:active {
+  background-color: #9ca3af;
+}
+
+/* Add a subtle visual indicator */
+.resizer::before {
+  content: '';
+  width: 2px;
+  height: 40px;
+  background-color: #9ca3af;
+  border-radius: 1px;
+  opacity: 0.6;
+}
+
+.resizer:hover::before {
+  opacity: 1;
+  background-color: #6b7280;
+}
+
+/* Ensure the resizer is visible and interactive */
+.resizer:focus {
+  outline: none;
+  background-color: #d1d5db;
+}
+
+/* Responsive adjustments */
+@media (max-width: 768px) {
+  .resizer {
+    width: 8px;
+  }
+  
+  .resizer::before {
+    height: 30px;
+  }
+}
