@@ -49,22 +49,7 @@ class Settings(BaseModel):
     # Database configuration - support both SQLite and PostgreSQL
     DB_TYPE: str = os.getenv("DB_TYPE", "sqlite")  # sqlite|postgresql
     _RAW_DB: str | None = os.getenv("DOCMIND_DB")
-    if DB_TYPE == "sqlite":
-        if _RAW_DB:
-            _resolved = (
-                os.path.abspath(os.path.join(base_dir, _RAW_DB))
-                if not os.path.isabs(_RAW_DB)
-                else _RAW_DB
-            )
-            DB_PATH: str = _resolved
-        else:
-            DB_PATH = os.path.join(tempfile.gettempdir(), "docmind.db")
-    else:
-        DB_PATH = (
-            os.path.abspath(os.path.join(base_dir, _RAW_DB)) if (_RAW_DB and not os.path.isabs(_RAW_DB))
-            else (_RAW_DB if _RAW_DB else "")
-        )
-    DB_DIR: str = os.path.dirname(DB_PATH) if DB_PATH else ""
+    DB_DIR: str = ""
     # SQLite vacuum settings
     DB_AUTOVACUUM_FULL: bool = os.getenv("DB_AUTOVACUUM_FULL", "true").lower() == "true"
     DB_VACUUM_ON_STARTUP: bool = os.getenv("DB_VACUUM_ON_STARTUP", "false").lower() == "true"
@@ -98,6 +83,26 @@ class Settings(BaseModel):
 
     RATE_LIMIT_PER_MINUTE: int = int(os.getenv("RATE_LIMIT_PER_MINUTE", "120"))
     RATE_LIMIT_BURST: int = int(os.getenv("RATE_LIMIT_BURST", "60"))
+
+    @property
+    def DB_PATH(self) -> str:
+        """Dynamically compute DB_PATH based on DB_TYPE and other settings."""
+        if self.DB_TYPE == "sqlite":
+            if self._RAW_DB:
+                resolved = (
+                    os.path.abspath(os.path.join(os.path.dirname(__file__), '..', self._RAW_DB))
+                    if not os.path.isabs(self._RAW_DB)
+                    else self._RAW_DB
+                )
+                return resolved
+            else:
+                return os.path.join(tempfile.gettempdir(), "docmind.db")
+        else:
+            return (
+                os.path.abspath(os.path.join(os.path.dirname(__file__), '..', self._RAW_DB)) 
+                if (self._RAW_DB and not os.path.isabs(self._RAW_DB))
+                else (self._RAW_DB if self._RAW_DB else "")
+            )
 
     @property
     def allowed_origins(self) -> list[str]:
