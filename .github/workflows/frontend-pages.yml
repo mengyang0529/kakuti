@@ -23,6 +23,8 @@ jobs:
     defaults:
       run:
         working-directory: web
+    env:                             # ← 受保护变量放这里
+      NODE_OPTIONS: --max_old_space_size=4096
     steps:
       - uses: actions/checkout@v4
         with:
@@ -35,40 +37,42 @@ jobs:
           cache: "npm"
           cache-dependency-path: "web/package-lock.json"
 
-      # 关键环境变量 & Vite 配置
+      # 注入 Vite/构建所需环境变量（可从 Secrets 注入后端地址/Key）
       - name: Inject env for Vite
         run: |
           echo "VITE_BASE_PATH=/kakuti/" >> $GITHUB_ENV
           echo "VITE_API_BASE=${{ secrets.VITE_API_BASE }}" >> $GITHUB_ENV
           echo "VITE_API_KEY=${{ secrets.VITE_API_KEY }}" >> $GITHUB_ENV
           echo "ROLLUP_SKIP_NODEJS_NATIVE=1" >> $GITHUB_ENV
-          echo "NODE_OPTIONS=--max_old_space_size=4096" >> $GITHUB_ENV
 
-      # ① 清理锁与依赖，规避 npm optional 依赖 bug
-      - name: Clean lock & node_modules
+      # 清理锁和缓存，绕过 npm 可选依赖 bug
+      - name: Clean lock & cache
         run: |
           rm -f package-lock.json
           rm -rf node_modules
           npm cache clean --force || true
 
-      # ② 安装依赖（不用 ci；加 legacy 兼容）
+      # 安装依赖（用 npm install 而非 npm ci）
       - name: Install deps
         run: npm install --no-audit --no-fund --legacy-peer-deps
 
-      # ③ 兜底：如未安装 rollup 原生包，则显式安装（避免 require 报错）
+      # 兜底：若 rollup 原生包缺失则显式安装
       - name: Ensure rollup native (fallback)
         run: |
           npm ls @rollup/rollup-linux-x64-gnu || npm i -D @rollup/rollup-linux-x64-gnu
 
+      # 构建
       - name: Build
         run: npm run build
 
+      # 构建产物自检（dist 需存在且非空）
       - name: Sanity check dist
         run: |
           ls -la
           ls -la dist || true
           [ -d dist ] && [ "$(ls -A dist | wc -l)" -gt 0 ] || (echo "dist is empty!" && exit 1)
 
+      # 上传工件；注意这里必须填仓库根相对路径 → web/dist
       - name: Upload artifact
         uses: actions/upload-pages-artifact@v3
         with:
