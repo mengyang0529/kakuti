@@ -4,14 +4,18 @@ on:
   push:
     branches: [ main ]
     paths:
-      - 'web/**'
-      - '.github/workflows/frontend-pages.yml'
+      - "web/**"
+      - ".github/workflows/frontend-pages.yml"
   workflow_dispatch:
 
 permissions:
   contents: read
   pages: write
   id-token: write
+
+concurrency:
+  group: "pages"
+  cancel-in-progress: true
 
 jobs:
   build:
@@ -20,25 +24,32 @@ jobs:
       run:
         working-directory: web
     steps:
-      - name: Checkout
-        uses: actions/checkout@v4
+      - uses: actions/checkout@v4
 
-      - name: Setup Node.js
-        uses: actions/setup-node@v4
+      - uses: actions/setup-node@v4
         with:
-          node-version: 20
+          node-version: "20"
+          cache: "npm"
+          cache-dependency-path: "web/package-lock.json"
 
-      - name: Install dependencies
-        run: npm install
-
-      - name: Build
+      # 把 Secrets 注入到构建环境（供 Vite 使用）
+      - name: Inject env
         run: |
           echo "VITE_API_BASE=${{ secrets.VITE_API_BASE }}" >> $GITHUB_ENV
           echo "VITE_API_KEY=${{ secrets.VITE_API_KEY }}" >> $GITHUB_ENV
-          if [ -n "${{ secrets.VITE_BASE_PATH }}" ]; then
-            echo "VITE_BASE_PATH=${{ secrets.VITE_BASE_PATH }}" >> $GITHUB_ENV
-          fi
-          npm run build
+
+      - name: Install deps
+        run: npm ci
+
+      - name: Build
+        run: npm run build
+
+      # 关键：若 dist 为空，提前失败并打印目录结构，便于排错
+      - name: Sanity check dist
+        run: |
+          ls -la
+          ls -la dist || true
+          [ -d dist ] && [ "$(ls -A dist | wc -l)" -gt 0 ] || (echo "dist is empty!" && exit 1)
 
       - name: Upload artifact
         uses: actions/upload-pages-artifact@v3
@@ -50,8 +61,6 @@ jobs:
     runs-on: ubuntu-latest
     environment:
       name: github-pages
-      url: ${{ steps.deployment.outputs.page_url }}
     steps:
       - name: Deploy to GitHub Pages
-        id: deployment
         uses: actions/deploy-pages@v4
