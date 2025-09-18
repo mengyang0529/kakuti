@@ -24,22 +24,10 @@ jobs:
       run:
         working-directory: web
     steps:
-      # ① 用完整历史 + 递归子模块，避免很多 git 相关 128 问题
       - uses: actions/checkout@v4
         with:
           fetch-depth: 0
           submodules: recursive
-
-      # ② 有些环境会触发“unsafe repository”保护，提前标记
-      - name: Mark repo as safe
-        run: git config --global --add safe.directory "$GITHUB_WORKSPACE"
-
-      # ③ 若仓库用到 LFS（有 .gitattributes 里标记 lfs），启用它（没用也无害）
-      - name: Setup Git LFS
-        run: |
-          git lfs install
-          git lfs fetch --all || true
-          git lfs pull || true
 
       - uses: actions/setup-node@v4
         with:
@@ -47,38 +35,26 @@ jobs:
           cache: "npm"
           cache-dependency-path: "web/package-lock.json"
 
-      # ④ 注入构建所需环境
-      - name: Inject env for Vite
+      - name: Inject env
         run: |
           echo "VITE_BASE_PATH=/kakuti/" >> $GITHUB_ENV
           echo "VITE_API_BASE=${{ secrets.VITE_API_BASE }}" >> $GITHUB_ENV
           echo "VITE_API_KEY=${{ secrets.VITE_API_KEY }}" >> $GITHUB_ENV
+          echo "ROLLUP_SKIP_NODEJS_NATIVE=1" >> $GITHUB_ENV   
           echo "NODE_OPTIONS=--max_old_space_size=4096" >> $GITHUB_ENV
 
-      # ⑤ 打印基本信息便于排障
-      - name: Print env & tree
-        run: |
-          node -v
-          npm -v
-          pwd
-          ls -la
-          jq . < package.json || cat package.json
-
       - name: Install deps
-        run: npm ci --no-audit --no-fund || npm install --no-audit --no-fund --legacy-peer-deps
+        run: npm install --no-audit --no-fund --legacy-peer-deps
 
       - name: Build
-        run: npm run build --if-present
+        run: npm run build
 
-      # ⑥ dist 必须存在且非空
       - name: Sanity check dist
         run: |
-          echo "---- list dist/ ----"; ls -la dist || true
-          if [ ! -d "dist" ] || [ "$(ls -A dist | wc -l)" -eq 0 ]; then
-            echo "ERROR: dist is empty. Check Vite base, build script, and output dir."; exit 1;
-          fi
+          ls -la
+          ls -la dist || true
+          [ -d dist ] && [ "$(ls -A dist | wc -l)" -gt 0 ] || (echo "dist is empty!" && exit 1)
 
-      # ⑦ 上传构建产物（注意：使用仓库根相对路径，故写 web/dist 最保险）
       - name: Upload artifact
         uses: actions/upload-pages-artifact@v3
         with:
