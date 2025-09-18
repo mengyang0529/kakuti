@@ -1,7 +1,10 @@
 FROM python:3.12-slim
 
+ARG DEBIAN_FRONTEND=noninteractive
+
 ENV PYTHONUNBUFFERED=1 \
-    PIP_NO_CACHE_DIR=off
+    PIP_NO_CACHE_DIR=off \
+    PIP_ROOT_USER_ACTION=ignore
 
 # System packages required by PDF/OCR tooling used in the app
 RUN apt-get update && apt-get install -y --no-install-recommends \
@@ -15,12 +18,12 @@ RUN apt-get update && apt-get install -y --no-install-recommends \
 WORKDIR /app
 
 # Install Python dependencies first to leverage docker layer caching
-COPY backend/requirements.txt ./requirements.txt
+COPY requirements.txt ./requirements.txt
 RUN pip install --upgrade pip \
  && pip install --no-cache-dir -r requirements.txt
 
 # Copy application source
-COPY backend/ ./
+COPY ./ ./
 
 EXPOSE 8080
 ENV PORT=8080
