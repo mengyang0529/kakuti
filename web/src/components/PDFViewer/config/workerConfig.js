@@ -1,5 +1,4 @@
 import { pdfjs } from 'react-pdf'
-import bundledWorkerSrc from 'pdfjs-dist/build/pdf.worker.min.mjs?url'
 
 /**
  * Configure PDF.js worker with optimized strategy:
@@ -49,16 +48,7 @@ export function configurePdfWorker() {
     // In development, use CDN worker for simplicity
     const isDevelopment = import.meta.env.DEV
     
-    if (isDevelopment) {
-      pdfjs.GlobalWorkerOptions.workerSrc = cdnWorkerSources[0]
-    } else {
-      try {
-        pdfjs.GlobalWorkerOptions.workerSrc = bundledWorkerSrc
-      } catch (error) {
-        console.warn('Bundled worker unavailable, falling back to CDN:', error)
-        pdfjs.GlobalWorkerOptions.workerSrc = cdnWorkerSources[0]
-      }
-    }
+    pdfjs.GlobalWorkerOptions.workerSrc = isDevelopment ? cdnWorkerSources[0] : cdnWorkerSources[0]
     
     // Test worker availability
     testWorkerAvailability()
