@@ -50,9 +50,9 @@ def _rate_limit_identity(request: Request) -> str:
 
 @app.middleware("http")
 async def rate_limiter(request: Request, call_next):
-    # ✅ 预检直接放行
+    # ✅ 预检直接交给后续中间件，让 CORS 正常加头
     if request.method == "OPTIONS":
-        return Response(status_code=204)
+        return await call_next(request)
 
     if settings.RATE_LIMIT_PER_MINUTE <= 0:
         return await call_next(request)
