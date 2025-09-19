@@ -1,4 +1,5 @@
 import { pdfjs } from 'react-pdf'
+import bundledWorkerSrc from 'pdfjs-dist/build/pdf.worker.min.mjs?url'
 
 /**
  * Configure PDF.js worker with optimized strategy:
@@ -42,7 +43,6 @@ export function configurePdfWorker() {
     const cdnWorkerSources = [
       `https://unpkg.com/pdfjs-dist@${pdfjsVersion}/build/pdf.worker.min.js`,
       `https://cdnjs.cloudflare.com/ajax/libs/pdf.js/${pdfjsVersion}/pdf.worker.min.js`,
-      // Fallback to the current package version
       'https://unpkg.com/pdfjs-dist@5.4.54/build/pdf.worker.min.js'
     ]
     
@@ -50,19 +50,13 @@ export function configurePdfWorker() {
     const isDevelopment = import.meta.env.DEV
     
     if (isDevelopment) {
-      // Development: Use CDN worker
-      pdfjs.GlobalWorkerOptions.workerSrc = cdnWorkerSources[0] // Use version-matched CDN
-
+      pdfjs.GlobalWorkerOptions.workerSrc = cdnWorkerSources[0]
     } else {
-      // Production: Try to use local worker from node_modules, fallback to CDN
       try {
-        // In production builds, Vite should bundle the worker or make it available
-        pdfjs.GlobalWorkerOptions.workerSrc = `${window.location.origin}/node_modules/pdfjs-dist/build/pdf.worker.min.js`
-
+        pdfjs.GlobalWorkerOptions.workerSrc = bundledWorkerSrc
       } catch (error) {
-        console.warn('Local worker not available, using CDN fallback:', error)
+        console.warn('Bundled worker unavailable, falling back to CDN:', error)
         pdfjs.GlobalWorkerOptions.workerSrc = cdnWorkerSources[0]
-
       }
     }
     
