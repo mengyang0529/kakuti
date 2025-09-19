@@ -25,7 +25,9 @@ RUN pip install --upgrade pip \
 # Copy application source
 COPY ./ ./
 
-RUN addgroup --system app && adduser --system --group app
+RUN addgroup --system app \
+    && adduser --system --group app \
+    && chown -R app:app /app
 USER app
 
 EXPOSE 8080
