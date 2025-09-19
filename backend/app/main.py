@@ -50,9 +50,30 @@ def _rate_limit_identity(request: Request) -> str:
 
 @app.middleware("http")
 async def rate_limiter(request: Request, call_next):
-    # ✅ 预检直接交给后续中间件，让 CORS 正常加头
+    # ✅ 预检直接放行，但手动加上必需的 CORS 头，避免请求被限流中间件截断
     if request.method == "OPTIONS":
-        return await call_next(request)
+        response = Response(status_code=status.HTTP_204_NO_CONTENT)
+        origin = request.headers.get("origin")
+        allowed = settings.allowed_origins
+
+        if "*" in allowed:
+            response.headers["Access-Control-Allow-Origin"] = "*"
+        elif origin and origin in allowed:
+            response.headers["Access-Control-Allow-Origin"] = origin
+            response.headers["Vary"] = "Origin"
+        else:
+            logger.warning("Preflight blocked: origin %s not allowed", origin)
+            response.status_code = status.HTTP_403_FORBIDDEN
+            return response
+
+        acr_headers = request.headers.get("access-control-request-headers")
+        acr_method = request.headers.get("access-control-request-method")
+        response.headers["Access-Control-Allow-Headers"] = acr_headers or "*"
+        response.headers["Access-Control-Allow-Methods"] = acr_method or "*"
+        response.headers["Access-Control-Allow-Credentials"] = "true"
+        response.headers.setdefault("Access-Control-Max-Age", "600")
+
+        return response
 
     if settings.RATE_LIMIT_PER_MINUTE <= 0:
         return await call_next(request)
