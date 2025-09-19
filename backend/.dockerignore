@@ -13,4 +13,18 @@ storage/
 *.sqlite
 *.db
 
+
+# Git
+.git
+.gitignore
+
+# Python
+__pycache__/
+*.pyc
+*.pyo
+*.pyd
+
+# IDE and OS files
+.vscode/
+.idea/
 .DS_Store

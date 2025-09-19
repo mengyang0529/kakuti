@@ -49,7 +49,7 @@ class Settings(BaseModel):
     # Database configuration - support both SQLite and PostgreSQL
     DB_TYPE: str = os.getenv("DB_TYPE", "sqlite")  # sqlite|postgresql
     _RAW_DB: str | None = os.getenv("DOCMIND_DB")
-    DB_DIR: str = ""
+    # DB_DIR: str = ""
     # SQLite vacuum settings
     DB_AUTOVACUUM_FULL: bool = os.getenv("DB_AUTOVACUUM_FULL", "true").lower() == "true"
     DB_VACUUM_ON_STARTUP: bool = os.getenv("DB_VACUUM_ON_STARTUP", "false").lower() == "true"
@@ -111,5 +111,12 @@ class Settings(BaseModel):
             return ["http://localhost:5173", "https://mengyang0529.github.io"]
         return [origin.strip() for origin in raw.split(",") if origin.strip()]
 
+    # ADD THIS NEW METHOD
+    @property
+    def DB_DIR(self) -> str:
+        """Dynamically compute the directory of the database file."""
+        # self.DB_PATH already computes the full file path.
+        # os.path.dirname() gets just the directory part of that path.
+        return os.path.dirname(self.DB_PATH)
 
 settings = Settings()

@@ -5,7 +5,7 @@ import time
 # Add the parent directory to the path
 sys.path.append(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 
-from fastapi import FastAPI, Request, Depends, HTTPException, status
+from fastapi import FastAPI, Request, Depends, HTTPException, status, Response
 from fastapi.responses import PlainTextResponse
 from fastapi.middleware.cors import CORSMiddleware
 from loguru import logger
@@ -50,11 +50,16 @@ def _rate_limit_identity(request: Request) -> str:
 
 @app.middleware("http")
 async def rate_limiter(request: Request, call_next):
+    # ✅ 预检直接放行
+    if request.method == "OPTIONS":
+        return Response(status_code=204)
+
     if settings.RATE_LIMIT_PER_MINUTE <= 0:
         return await call_next(request)
     path = request.url.path
     if path.startswith("/health") or path.startswith("/healthz"):
         return await call_next(request)
+
     identity = _rate_limit_identity(request)
     with _bucket_lock:
         bucket = _rate_limit_buckets.get(identity)
@@ -66,32 +71,29 @@ async def rate_limiter(request: Request, call_next):
         return PlainTextResponse("Rate limit exceeded", status_code=status.HTTP_429_TOO_MANY_REQUESTS)
     return await call_next(request)
 
-# CORS
+# --- CORS 中间件（建议放宽 headers） ---
 if settings.ALLOW_CORS:
     app.add_middleware(
         CORSMiddleware,
-        allow_origins=settings.allowed_origins,
+        allow_origins=settings.allowed_origins,  # ['https://mengyang0529.github.io'] 之类
         allow_credentials=True,
         allow_methods=["*"],
-        allow_headers=["authorization", "content-type", "x-api-key", "x-requested-with"],
+        allow_headers=["*"],  # ✅ 含 X-API-Key/Content-Type 等
     )
 
-
+# --- 放行预检：API key 依赖 ---
 async def api_key_guard(request: Request):
+    # ✅ 预检不做鉴权
+    if request.method == "OPTIONS":
+        return
     logger.info(f"API key guard called for {request.method} {request.url.path}")
     if not settings.REQUIRE_API_KEY:
-        logger.info("API key not required, allowing request")
         return
-    # Check header first
-    key = request.headers.get("X-API-Key")
-    # If no header, check query parameter (for download links)
-    if not key:
-        key = request.query_params.get("api_key")
+    key = request.headers.get("X-API-Key") or request.query_params.get("api_key")
     logger.info(f"API key from request: {key}, expected: {settings.API_KEY}")
     if not key or key != settings.API_KEY:
         logger.error("API key validation failed")
         raise HTTPException(status_code=status.HTTP_401_UNAUTHORIZED, detail="Invalid API key")
-    logger.info("API key validation passed")
 
 
 @app.on_event("startup")

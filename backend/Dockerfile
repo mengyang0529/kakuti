@@ -25,7 +25,11 @@ RUN pip install --upgrade pip \
 # Copy application source
 COPY ./ ./
 
+RUN addgroup --system app && adduser --system --group app
+USER app
+
 EXPOSE 8080
 ENV PORT=8080
 
-CMD ["uvicorn", "app.main:app", "--host", "0.0.0.0", "--port", "8080"]
+# CMD ["uvicorn", "app.main:app", "--host", "0.0.0.0", "--port", "$PORT"]
+CMD uvicorn app.main:app --host 0.0.0.0 --port $PORT
