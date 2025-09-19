@@ -59,6 +59,8 @@ jobs:
             --project=$PROJECT_ID \
             --image=$REGION-docker.pkg.dev/$PROJECT_ID/$REPOSITORY/$IMAGE:$IMAGE_TAG \
             --region=$REGION --platform=managed --allow-unauthenticated \
-            --min-instances=0 --max-instances=4 --memory=1Gi --cpu=1 --timeout=60 \
-            --update-env-vars="REQUIRE_API_KEY=true,GEMINI_REQUEST_TIMEOUT=30" \
+            --min-instances=0 --max-instances=4 \
+            --memory=2Gi \
+            --cpu=1 --timeout=60 \
+            --update-env-vars="REQUIRE_API_KEY=true,GEMINI_REQUEST_TIMEOUT=30,RAW_ALLOWED_ORIGINS=https://mengyang0529.github.io,http://localhost:5173" \
             --update-secrets="API_KEY=kakuti-api-key:latest,GEMINI_API_KEY=kakuti-gemini-key:latest"

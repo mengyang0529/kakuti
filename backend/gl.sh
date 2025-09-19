@@ -1,35 +1,44 @@
 #!/bin/bash
+set -euo pipefail
 
 # --- 1. Configuration ---
-export PROJECT_ID="kakuti"
-export SERVICE_NAME="kakuti-api"
-export PROD_API_KEY="rNL1UakRBj/CvrRiDx1oZEdpMlxqwC592UzsHuBpd9A="
+PROJECT_ID="zenn-ai-agent-hackathon-471021"
+REPOSITORY="kakuti-backend"
+IMAGE_NAME="backend"
+SERVICE_NAME="kakuti-api"
+REGION="asia-northeast1"
+PROD_API_KEY="rNL1UakRBj/CvrRiDx1oZEdpMlxqwC592UzsHuBpd9A="
 
-# Generate a unique tag based on the current timestamp
-export IMAGE_TAG=$(date +%Y%m%d-%H%M%S)
-export IMAGE_URL="gcr.io/${PROJECT_ID}/${SERVICE_NAME}:${IMAGE_TAG}"
+SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
+REPO_ROOT="$(cd "${SCRIPT_DIR}/.." && pwd)"
 
-echo ">>> Using unique image URL: ${IMAGE_URL}"
+IMAGE_TAG="manual-$(date +%Y%m%d-%H%M%S)"
+IMAGE_URL="${REGION}-docker.pkg.dev/${PROJECT_ID}/${REPOSITORY}/${IMAGE_NAME}:${IMAGE_TAG}"
 
-# --- 2. Build Image for the Correct Platform ---
-echo ">>> Step 1: Building Docker image for Cloud Run (amd64)..."
-docker build --platform linux/amd64 -t $IMAGE_URL .
+echo ">>> Using image: ${IMAGE_URL}"
 
-# --- 3. Push Image ---
-echo ">>> Step 2: Pushing image to GCR..."
-gcloud auth configure-docker
-docker push $IMAGE_URL
+# --- 2. Build image (linux/amd64) ---
+echo ">>> Step 1: Building Docker image..."
+docker build \
+  --platform linux/amd64 \
+  -f "${REPO_ROOT}/backend/Dockerfile" \
+  -t "${IMAGE_URL}" \
+  "${REPO_ROOT}/backend"
 
-# --- 4. Deploy Service ---
+# --- 3. Push image ---
+echo ">>> Step 2: Pushing image to Artifact Registry..."
+gcloud auth configure-docker "${REGION}-docker.pkg.dev"
+docker push "${IMAGE_URL}"
+
+# --- 4. Deploy service ---
 echo ">>> Step 3: Deploying to Cloud Run..."
-# ✨ KEY CHANGE IS HERE: We are now setting RAW_ALLOWED_ORIGINS explicitly
-gcloud run deploy ${SERVICE_NAME} \
-  --image ${IMAGE_URL} \
-  --project ${PROJECT_ID} \
-  --region asia-northeast1 \
+gcloud run deploy "${SERVICE_NAME}" \
+  --image "${IMAGE_URL}" \
+  --project "${PROJECT_ID}" \
+  --region "${REGION}" \
   --allow-unauthenticated \
   --memory=2Gi \
-  --set-env-vars="^##^REQUIRE_API_KEY=true##API_KEY=${PROD_API_KEY}##DOCMIND_DB=/tmp/docmind.db##LLM_PROVIDER=gemini##HF_HOME=/tmp##RAW_ALLOWED_ORIGINS=https://mengyang0529.github.io,http://localhost:5173" \
-  --set-secrets="GEMINI_API_KEY=Kakuti-Secret:latest"
+  --set-env-vars "^|^REQUIRE_API_KEY=true|API_KEY=${PROD_API_KEY}|DOCMIND_DB=/tmp/docmind.db|LLM_PROVIDER=gemini|HF_HOME=/tmp|ALLOWED_ORIGINS=https://mengyang0529.github.io,http://localhost:5173" \
+  --set-secrets "GEMINI_API_KEY=Kakuti-Secret:latest"
 
 echo ">>> Deployment complete!"
