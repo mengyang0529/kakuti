@@ -94,6 +94,7 @@ async def rate_limiter(request: Request, call_next):
 
 # --- CORS 中间件（建议放宽 headers） ---
 if settings.ALLOW_CORS:
+    logger.info("CORS allowed origins: %s", settings.allowed_origins)
     app.add_middleware(
         CORSMiddleware,
         allow_origins=settings.allowed_origins,  # ['https://mengyang0529.github.io'] 之类
@@ -160,6 +161,14 @@ async def health():
 @app.get("/healthz")
 async def healthz():
     return {"status": "ok"}
+
+
+@app.get("/debug/cors")
+async def cors_debug():
+    return {
+        "allow_cors": settings.ALLOW_CORS,
+        "allowed_origins": settings.allowed_origins,
+    }
 
 
 # Routers

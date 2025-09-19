@@ -7,7 +7,6 @@ REPOSITORY="kakuti-backend"
 IMAGE_NAME="backend"
 SERVICE_NAME="kakuti-api"
 REGION="asia-northeast1"
-PROD_API_KEY="rNL1UakRBj/CvrRiDx1oZEdpMlxqwC592UzsHuBpd9A="
 
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 REPO_ROOT="$(cd "${SCRIPT_DIR}/.." && pwd)"
@@ -38,7 +37,7 @@ gcloud run deploy "${SERVICE_NAME}" \
   --region "${REGION}" \
   --allow-unauthenticated \
   --memory=2Gi \
-  --set-env-vars "^|^REQUIRE_API_KEY=true|API_KEY=${PROD_API_KEY}|DOCMIND_DB=/tmp/docmind.db|LLM_PROVIDER=gemini|HF_HOME=/tmp|ALLOWED_ORIGINS=https://mengyang0529.github.io,http://localhost:5173" \
-  --set-secrets "GEMINI_API_KEY=Kakuti-Secret:latest"
+  --set-env-vars "^|^REQUIRE_API_KEY=true|GEMINI_REQUEST_TIMEOUT=30|DOCMIND_DB=/tmp/docmind.db|LLM_PROVIDER=gemini|HF_HOME=/tmp|ALLOWED_ORIGINS=https://mengyang0529.github.io,http://localhost:5173" \
+  --set-secrets "API_KEY=kakuti-api-key:latest,GEMINI_API_KEY=kakuti-gemini-key:latest"
 
 echo ">>> Deployment complete!"
