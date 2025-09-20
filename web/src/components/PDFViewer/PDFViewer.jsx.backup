@@ -17,6 +17,7 @@ import OverviewDialog from './components/OverviewDialog'
 import MagicWandLayer from './components/MagicWandLayer'
 import ActionInputDialog from './dialogs/ActionInputDialog'
 import ActionResponseDialog from './dialogs/ActionResponseDialog'
+import MagicActionDialog from './dialogs/MagicActionDialog'
 import documentService from '../../services/documentService'
 import { calculateCorridorSelection } from './utils/textSelection'
 import cacheManager from './utils/cacheManager'
@@ -72,9 +73,13 @@ const PDFViewerContent = ({ file, documentId, onMarkdownUpdate }) => {
     isOpen: false
   })
   
-  
-  // 防重复调用的ref
-  const isProcessingWandSelect = useRef(false)
+  const [magicSelection, setMagicSelection] = useState({
+    text: '',
+    pageIndex: -1,
+    rectsNorm: [],
+    anchor: null,
+    isOpen: false
+  })
   
   
 
@@ -83,9 +88,7 @@ const PDFViewerContent = ({ file, documentId, onMarkdownUpdate }) => {
     contextMenu,
     handleCopyText,
     handleTranslateText: originalHandleTranslateText,
-    setContextMenu,
-    triggerActionInputDialog,
-    resetMagicWandTrigger
+    setContextMenu
   } = useTextSelection(viewerRef)
 
   useEffect(() => {
@@ -461,8 +464,7 @@ const PDFViewerContent = ({ file, documentId, onMarkdownUpdate }) => {
     handleMouseDown,
     handleMouseUp,
     handleMouseMove,
-    isLoading,
-    handleMagicWandSelection
+    isLoading
   } = useHighlight(
     viewerRef,
     toolMode,
@@ -475,76 +477,44 @@ const PDFViewerContent = ({ file, documentId, onMarkdownUpdate }) => {
 
   // Handle magic wand selection callback
   const handleWandSelect = useCallback(({ pageIndex, minX, maxX, pathBounds, anchor, pageRect }) => {
-    console.log('handleWandSelect called with:', { pageIndex, minX, maxX, pathBounds, anchor, pageRect })
-    
-    // 防重复调用 - 如果正在处理中，则忽略
-    if (isProcessingWandSelect.current) {
-      console.log('handleWandSelect: already processing, ignoring duplicate call')
-      return
-    }
-    
-    // 立即设置处理标志
-    isProcessingWandSelect.current = true
-    console.log('handleWandSelect: processing started')
-    
-    // 使用setTimeout确保异步重置，避免同步调用问题
-    setTimeout(() => {
-      isProcessingWandSelect.current = false
-      console.log('handleWandSelect: processing flag reset')
-    }, 100)
-    
     const pageElement = viewerRef.current?.querySelector(`[data-page-number="${pageIndex + 1}"]`)
     const textLayer = pageElement?.querySelector('.react-pdf__Page__textContent')
     
     if (!pageElement || !textLayer) {
       console.warn('Page element or text layer not found for magic wand selection')
-      isProcessingWandSelect.current = false
       return
     }
     
     // Calculate text selection using corridor algorithm
-    // Convert Magic Wand coordinates to page-relative coordinates
-    const pageRelativeMinY = pathBounds.minY - pageRect.top
-    const pageRelativeMaxY = pathBounds.maxY - pageRect.top
-    
-    console.log('Magic Wand coordinate conversion:', {
-      originalMinY: pathBounds.minY,
-      originalMaxY: pathBounds.maxY,
-      pageRectTop: pageRect.top,
-      pageRelativeMinY: pageRelativeMinY,
-      pageRelativeMaxY: pageRelativeMaxY
-    })
-    
     const selection = calculateCorridorSelection({
       pageElement,
       textLayer,
       minX,
       maxX,
-      minY: pageRelativeMinY,
-      maxY: pageRelativeMaxY
+      minY: pathBounds.minY,
+      maxY: pathBounds.maxY
     })
     
     if (!selection.isEmpty) {
-      // 将Magic Wand选择结果传递给useHighlight系统
-      console.log('Magic Wand selection result:', {
+      // 触发MagicActionDialog
+      setMagicSelection({
         text: selection.selectedText,
         pageIndex: pageIndex,
         rectsNorm: selection.rectsNorm,
-        anchor: anchor
+        anchor: anchor,
+        isOpen: true
       })
-      
-      // 创建Magic Wand高亮
-      handleMagicWandSelection(selection.selectedText, pageIndex, selection.rectsNorm)
-      
-      // 触发ActionInputDialog
-      triggerActionInputDialog(selection.selectedText, anchor, selection.rectsNorm)
     } else {
-      // 即使没有选中文本，也触发ActionInputDialog
-      triggerActionInputDialog('', anchor, [])
+      // 即使没有选中文本，也触发MagicActionDialog
+      setMagicSelection({
+        text: '',
+        pageIndex: pageIndex,
+        rectsNorm: [],
+        anchor: anchor,
+        isOpen: true
+      })
     }
-    
-    console.log('handleWandSelect: processing completed')
-  }, [viewerRef, triggerActionInputDialog, handleMagicWandSelection])
+  }, [viewerRef])
   
   // Magic wand functionality
   const {
@@ -561,15 +531,14 @@ const PDFViewerContent = ({ file, documentId, onMarkdownUpdate }) => {
   
   // Clear paths after selection is processed
   useEffect(() => {
-    if (contextMenu.show) {
+    if (magicSelection.isOpen) {
       // Clear the drawn path after the dialog is shown
       const timer = setTimeout(() => {
         clearAllPaths()
       }, 100)
       return () => clearTimeout(timer)
     }
-  }, [contextMenu.show, clearAllPaths])
-  
+  }, [magicSelection.isOpen, clearAllPaths])
   
 
 
@@ -632,6 +601,7 @@ const PDFViewerContent = ({ file, documentId, onMarkdownUpdate }) => {
     setHighlightPopover({ show: false, id: null, left: 0, top: 0 })
     setTranslationDialog({ isOpen: false, selectedText: '' })
     setOverviewDialog({ isOpen: false })
+    setMagicSelection({ text: '', pageIndex: -1, rectsNorm: [], anchor: null, isOpen: false })
     
     // Reset PDF viewer state
     dispatch({ type: PDF_ACTIONS.SET_TOOL_MODE, payload: null })
@@ -735,11 +705,7 @@ const PDFViewerContent = ({ file, documentId, onMarkdownUpdate }) => {
 
   // Memoize highlight overlays to avoid recalculation on every render
   const highlightOverlays = useMemo(() => {
-    const overlays = getHighlightOverlays()
-    if (overlays.length > 0) {
-      console.log('HighlightOverlays generated:', overlays.length, 'overlays from', highlights.length, 'highlights')
-    }
-    return overlays
+    return getHighlightOverlays()
   }, [getHighlightOverlays, layoutVersion, highlights])
 
   // Reposition open highlight popover on layout changes
@@ -954,10 +920,7 @@ const PDFViewerContent = ({ file, documentId, onMarkdownUpdate }) => {
         isOpen={contextMenu.show}
         initialPosition={{ x: contextMenu.x, y: contextMenu.y }}
         selectedText={contextMenu.selectedText}
-        onClose={() => {
-          setContextMenu({ show: false, x: 0, y: 0, selectedText: '' })
-          resetMagicWandTrigger()
-        }}
+        onClose={() => setContextMenu({ show: false, x: 0, y: 0, selectedText: '' })}
         onCopy={() => { handleCopyText() }}
         onTranslate={(text) => {
           handleQuickTranslate(text)
@@ -974,6 +937,33 @@ const PDFViewerContent = ({ file, documentId, onMarkdownUpdate }) => {
         isMultiTurn={actionResponseDialog.isMultiTurn}
       />
       
+      {/* Magic Action Dialog */}
+      <MagicActionDialog
+        isOpen={magicSelection.isOpen}
+        selectedText={magicSelection.text}
+        initialPosition={magicSelection.anchor}
+        onClose={() => setMagicSelection({ text: '', pageIndex: -1, rectsNorm: [], anchor: null, isOpen: false })}
+        onTranslate={(text) => {
+          // 触发翻译功能
+          setTranslationDialog({
+            isOpen: true,
+            selectedText: text || magicSelection.text
+          })
+          setMagicSelection({ text: '', pageIndex: -1, rectsNorm: [], anchor: null, isOpen: false })
+        }}
+        onExplain={() => {
+          // 在MagicActionDialog中直接开始解释对话
+          console.log('Starting explain conversation in MagicActionDialog')
+        }}
+        onAnnotate={() => {
+          // 在MagicActionDialog中直接开始注释对话
+          console.log('Starting annotate conversation in MagicActionDialog')
+        }}
+        // 新增对话功能props
+        onSendMessage={handleSendMessage}
+        documentId={documentId}
+        isMultiTurn={actionResponseDialog.isMultiTurn}
+      />
 
       {/* PDF Document with overlays and interactions inside the scroll container */}
       <div className="pdf-zoom-preview" ref={zoomContainerRef} onWheel={handleWheelZoom}>
@@ -993,6 +983,7 @@ const PDFViewerContent = ({ file, documentId, onMarkdownUpdate }) => {
         onMagicWandMouseDown={handleMagicWandMouseDown}
         onMagicWandMouseMove={handleMagicWandMouseMove}
         onMagicWandMouseUp={handleMagicWandMouseUp}
+        magicSelection={magicSelection}
       >
         {/* PDF Overlays */}
         <PdfOverlays 

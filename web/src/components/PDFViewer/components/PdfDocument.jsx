@@ -3,7 +3,6 @@ import PropTypes from 'prop-types'
 import { Document, Page } from 'react-pdf'
 import { usePdfViewer } from '../context/PdfViewerContext'
 import { PDF_ACTIONS } from '../context/pdfViewerConstants'
-import MagicWandHighlight from './MagicWandHighlight'
 
 const PdfDocument = ({
   file,
@@ -23,7 +22,6 @@ const PdfDocument = ({
   onMagicWandMouseDown,
   onMagicWandMouseMove,
   onMagicWandMouseUp,
-  magicSelection,
   children
 }) => {
   const { scale, numPages, error, dispatch, viewerRef, pdfDocRef } = usePdfViewer()
@@ -151,10 +149,6 @@ const PdfDocument = ({
                   console.warn(`Page ${index + 1} load error:`, error)
                 }}
               />
-              {/* Magic wand highlight for this specific page */}
-              {magicSelection && magicSelection.pageIndex === index && (
-                <MagicWandHighlight magicSelection={magicSelection} />
-              )}
             </div>
           ))}
         </div>
@@ -183,16 +177,6 @@ PdfDocument.propTypes = {
   onMagicWandMouseDown: PropTypes.func,
   onMagicWandMouseMove: PropTypes.func,
   onMagicWandMouseUp: PropTypes.func,
-  magicSelection: PropTypes.shape({
-    isOpen: PropTypes.bool,
-    pageIndex: PropTypes.number,
-    rectsNorm: PropTypes.arrayOf(PropTypes.shape({
-      x: PropTypes.number,
-      y: PropTypes.number,
-      w: PropTypes.number,
-      h: PropTypes.number
-    }))
-  }),
   children: PropTypes.node
 }
 

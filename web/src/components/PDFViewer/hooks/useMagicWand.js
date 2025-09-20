@@ -81,10 +81,12 @@ const useMagicWand = (viewerRef, toolMode, onWandSelect) => {
   }, [viewerRef])
 
   const handleMouseDown = useCallback((e) => {
+    console.log('Magic wand handleMouseDown called, isMagicWandMode:', isMagicWandMode, 'toolMode:', toolMode)
     if (!isMagicWandMode) return
     
     e.preventDefault()
     const pos = getRelativePosition(e)
+    console.log('Magic wand mouse down position:', pos)
     if (!pos) return
 
     setIsDrawing(true)

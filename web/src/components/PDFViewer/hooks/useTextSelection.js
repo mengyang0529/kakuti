@@ -1,8 +1,23 @@
-import { useState, useEffect } from 'react'
+import { useState, useEffect, useRef } from 'react'
 
 const useTextSelection = (viewerRef) => {
   const [selectedText, setSelectedText] = useState('')
   const [contextMenu, setContextMenu] = useState({ show: false, x: 0, y: 0, selectedText: '', rects: [] })
+  const [isMagicWandTriggered, setIsMagicWandTriggered] = useState(false)
+  const magicWandTriggerRef = useRef(false)
+  
+  // 手动触发ActionInputDialog的方法
+  const triggerActionInputDialog = (text, position, rects = []) => {
+    magicWandTriggerRef.current = true
+    setIsMagicWandTriggered(true)
+    setContextMenu({
+      show: true,
+      x: position.x,
+      y: position.y,
+      selectedText: text,
+      rects: rects
+    })
+  }
 
   useEffect(() => {
     const handleMouseUp = (e) => {
@@ -10,6 +25,12 @@ const useTextSelection = (viewerRef) => {
       if (e.target.closest && (e.target.closest('.action-input-dialog') || e.target.closest('.magic-action-dialog'))) {
         return
       }
+      
+      // 如果contextMenu已经显示，不要关闭它（可能是Magic Wand触发的）
+      if (contextMenu.show || isMagicWandTriggered || magicWandTriggerRef.current) {
+        return
+      }
+      
       const selection = window.getSelection()
       
       if (selection && selection.toString().trim()) {
@@ -74,10 +95,17 @@ const useTextSelection = (viewerRef) => {
     }
 
     const handleMouseDown = (e) => {
+      console.log('handleMouseDown called, isMagicWandTriggered:', isMagicWandTriggered, 'contextMenu.show:', contextMenu.show)
+      
       // Don't close if clicking on legacy context menu or new action dialog
       if ((e.target.closest && e.target.closest('.context-menu')) ||
           (e.target.closest && e.target.closest('.action-input-dialog')) ||
           (e.target.closest && e.target.closest('.magic-action-dialog'))) {
+        return
+      }
+      
+      // 如果是Magic Wand触发的，不要关闭
+      if (isMagicWandTriggered || magicWandTriggerRef.current) {
         return
       }
       setContextMenu({ show: false, x: 0, y: 0, selectedText: '', rects: [] })
@@ -149,7 +177,14 @@ const useTextSelection = (viewerRef) => {
   const handleTranslateText = () => {
     // Just close context menu, translation will be handled by the dialog
     setContextMenu({ show: false, x: 0, y: 0, selectedText: '' })
+    magicWandTriggerRef.current = false
+    setIsMagicWandTriggered(false)
     // Don't clear selection immediately to allow the dialog to access it
+  }
+
+  const resetMagicWandTrigger = () => {
+    magicWandTriggerRef.current = false
+    setIsMagicWandTriggered(false)
   }
 
   return {
@@ -157,7 +192,9 @@ const useTextSelection = (viewerRef) => {
     contextMenu,
     handleCopyText,
     handleTranslateText,
-    setContextMenu
+    setContextMenu,
+    triggerActionInputDialog,
+    resetMagicWandTrigger
   }
 }
 

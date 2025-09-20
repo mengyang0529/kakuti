@@ -38,6 +38,8 @@ export default function ActionInputDialog({
     })
   }, [isOpen, selectedText])
 
+  console.log('ActionInputDialog render, isOpen:', isOpen, 'selectedText:', selectedText?.substring(0, 50))
+  
   if (!isOpen) return null
 
   return (
