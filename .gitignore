@@ -8,7 +8,7 @@ pnpm-debug.log*
 # Production builds
 /dist
 /build
-/web/dist
+# /web/dist
 /web/build
 /backend/dist
 /backend/build
