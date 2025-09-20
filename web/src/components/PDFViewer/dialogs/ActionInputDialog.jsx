@@ -12,6 +12,8 @@ export default function ActionInputDialog({
   onTranslate,
   onQuery,
   onSend,
+  embedded = false, // 新增嵌入模式参数
+  isMultiTurn = false, // 是否为多轮对话模式
 }) {
   const [message, setMessage] = useState(selectedText || '')
   const [isSending, setIsSending] = useState(false)
@@ -43,8 +45,9 @@ export default function ActionInputDialog({
       isOpen={isOpen}
       initialPosition={initialPosition}
       onClose={onClose}
-      className="action-input-dialog"
-      draggableHandle=".aid-header" /* header hidden; dragging disabled */
+      className={`action-input-dialog ${embedded ? 'aid-embedded' : ''} ${isMultiTurn ? 'aid-multi-turn' : ''}`}
+      draggableHandle=".aid-header"
+      embedded={embedded}
     >
       <div className="aid-header" aria-hidden="true"></div>
 
@@ -183,6 +186,8 @@ ActionInputDialog.propTypes = {
   onTranslate: PropTypes.func.isRequired,
   onQuery: PropTypes.func.isRequired,
   onSend: PropTypes.func,
+  embedded: PropTypes.bool,
+  isMultiTurn: PropTypes.bool,
 }
 
 ActionInputDialog.defaultProps = {

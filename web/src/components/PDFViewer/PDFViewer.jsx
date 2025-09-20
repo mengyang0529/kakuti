@@ -15,8 +15,9 @@ import VerticalToolbar from './components/VerticalToolbar'
 import TranslationDialog from './components/TranslationDialog'
 import OverviewDialog from './components/OverviewDialog'
 import MagicWandLayer from './components/MagicWandLayer'
-import MagicActionDialog from './dialogs/MagicActionDialog'
 import ActionInputDialog from './dialogs/ActionInputDialog'
+import ActionResponseDialog from './dialogs/ActionResponseDialog'
+import MagicActionDialog from './dialogs/MagicActionDialog'
 import documentService from '../../services/documentService'
 import { calculateCorridorSelection } from './utils/textSelection'
 import cacheManager from './utils/cacheManager'
@@ -59,11 +60,19 @@ const PDFViewerContent = ({ file, documentId, onMarkdownUpdate }) => {
     isOpen: false,
     selectedText: ''
   })
+  const [actionResponseDialog, setActionResponseDialog] = useState({
+    isOpen: false,
+    type: 'chat',
+    entries: [],
+    frame: { left: 240, bottom: 260 },
+    isMultiTurn: false, // 是否为多轮对话模式
+  })
+  const [lastActionAnchor, setLastActionAnchor] = useState({ x: 240, y: 220 })
+  const [actionResponseHeight, setActionResponseHeight] = useState(0)
   const [overviewDialog, setOverviewDialog] = useState({
     isOpen: false
   })
   
-  // Magic selection state for wand-selected text
   const [magicSelection, setMagicSelection] = useState({
     text: '',
     pageIndex: -1,
@@ -71,14 +80,100 @@ const PDFViewerContent = ({ file, documentId, onMarkdownUpdate }) => {
     anchor: null,
     isOpen: false
   })
+  
+  
 
   // Custom hooks - must be called before useEffects that depend on them
-  const { 
-    contextMenu, 
-    handleCopyText, 
-    handleTranslateText: originalHandleTranslateText, 
-    setContextMenu 
+  const {
+    contextMenu,
+    handleCopyText,
+    handleTranslateText: originalHandleTranslateText,
+    setContextMenu
   } = useTextSelection(viewerRef)
+
+  useEffect(() => {
+    if (contextMenu.show) {
+      setLastActionAnchor({ x: contextMenu.x, y: contextMenu.y })
+    }
+  }, [contextMenu.show, contextMenu.x, contextMenu.y])
+
+  // 监听ActionInputDialog位置变化，动态调整ActionResponseDialog位置
+  useEffect(() => {
+    if (!actionResponseDialog.isOpen || !actionResponseDialog.isMultiTurn) return
+
+    const updatePosition = () => {
+      const actionInputDialog = document.querySelector('.action-input-dialog')
+      if (actionInputDialog) {
+        const rect = actionInputDialog.getBoundingClientRect()
+        const newFrame = {
+          left: rect.left,
+          bottom: window.innerHeight - rect.top + 4, // 紧贴ActionInputDialog上方
+        }
+        
+        setActionResponseDialog(prev => ({
+          ...prev,
+          frame: newFrame
+        }))
+      }
+    }
+
+    // 初始位置更新
+    updatePosition()
+
+    // 监听窗口大小变化
+    const handleResize = () => {
+      setTimeout(updatePosition, 100) // 延迟更新，等待布局稳定
+    }
+
+    // 监听ActionInputDialog位置变化
+    const observer = new MutationObserver(() => {
+      setTimeout(updatePosition, 50)
+    })
+
+    const actionInputDialog = document.querySelector('.action-input-dialog')
+    if (actionInputDialog) {
+      observer.observe(actionInputDialog, {
+        attributes: true,
+        attributeFilter: ['style', 'class']
+      })
+    }
+
+    window.addEventListener('resize', handleResize)
+
+    return () => {
+      window.removeEventListener('resize', handleResize)
+      observer.disconnect()
+    }
+  }, [actionResponseDialog.isOpen, actionResponseDialog.isMultiTurn])
+
+  // 点击外部区域关闭ActionResponseDialog
+  useEffect(() => {
+    const handleClickOutside = (event) => {
+      // 检查是否点击在ActionResponseDialog内部
+      const actionResponseDialogElement = document.querySelector('.action-response-dialog')
+      
+      const isClickInsideResponse = actionResponseDialogElement && actionResponseDialogElement.contains(event.target)
+      
+      // 如果点击在ActionResponseDialog外部，关闭它
+      if (!isClickInsideResponse) {
+        setActionResponseDialog(prev => ({
+          ...prev,
+          isOpen: false,
+          entries: []
+        }))
+      }
+    }
+
+    // 只有在ActionResponseDialog打开时才添加监听器
+    if (actionResponseDialog.isOpen) {
+      document.addEventListener('mousedown', handleClickOutside)
+    }
+
+    return () => {
+      document.removeEventListener('mousedown', handleClickOutside)
+    }
+  }, [actionResponseDialog.isOpen])
+
   
   // Override the translate handler to open our dialog
   const handleTranslateText = () => {
@@ -89,6 +184,66 @@ const PDFViewerContent = ({ file, documentId, onMarkdownUpdate }) => {
       })
       // Close context menu after action
       setContextMenu({ show: false, x: 0, y: 0, selectedText: '' })
+    }
+  }
+
+  const computeResponseFrame = useCallback((anchor) => {
+    const width = 340
+    const vw = typeof window !== 'undefined' ? window.innerWidth : 1280
+    const vh = typeof window !== 'undefined' ? window.innerHeight : 720
+    const left = Math.min(Math.max(anchor.x, 12), vw - width - 12)
+    const bottom = Math.min(Math.max(anchor.y - 8, 24), vh - 12)
+    return { left, bottom }
+  }, [])
+
+  const handleQuickTranslate = async (textArg) => {
+    const payload = textArg || contextMenu.selectedText || ''
+    if (!payload.trim()) return
+    const anchor = contextMenu.show
+      ? { x: contextMenu.x, y: contextMenu.y }
+      : lastActionAnchor
+    setLastActionAnchor(anchor)
+    const position = computeResponsePosition(anchor, actionResponseHeight)
+    setActionResponseDialog(prev => {
+      const history = prev.isOpen && prev.type === 'translate' ? [...prev.entries] : []
+      return {
+        isOpen: true,
+        position,
+        type: 'translate',
+        entries: [
+          ...history,
+          { role: 'user', label: '原文', content: payload },
+          { role: 'assistant', label: '翻译', content: '翻译中…', loading: true },
+        ],
+      }
+    })
+
+    try {
+      const result = await translateText(payload, 'zh')
+      setActionResponseDialog(prev => {
+        const entries = [...prev.entries]
+        if (entries.length > 0) {
+          entries[entries.length - 1] = {
+            role: 'assistant',
+            label: '翻译',
+            content: result?.text || '(空)',
+          }
+        }
+        return { ...prev, position, entries }
+      })
+    } catch (error) {
+      const message = error?.message || '翻译失败，请稍后再试'
+      setActionResponseDialog(prev => {
+        const entries = [...prev.entries]
+        if (entries.length > 0) {
+          entries[entries.length - 1] = {
+            role: 'assistant',
+            label: '错误',
+            content: message,
+          }
+        }
+        return { ...prev, position, entries }
+      })
     }
   }
 
@@ -115,6 +270,107 @@ const PDFViewerContent = ({ file, documentId, onMarkdownUpdate }) => {
 
   const handleTranslate = async (text, targetLang) => {
     return await translateText(text, targetLang)
+  }
+
+  const handleSendMessage = async (msg, selected) => {
+    if (!msg?.trim()) return
+    const anchor = contextMenu.show
+      ? { x: contextMenu.x, y: contextMenu.y }
+      : lastActionAnchor
+    setLastActionAnchor(anchor)
+    // 计算位置：ActionResponseDialog直接定位在ActionInputDialog上方
+    const frame = {
+      left: anchor.x,
+      bottom: window.innerHeight - anchor.y + 4, // 紧贴ActionInputDialog上方
+    }
+
+    setActionResponseDialog(prev => {
+      const history = prev.isOpen && prev.type === 'chat' && prev.isMultiTurn ? [...prev.entries] : []
+      return {
+        isOpen: true,
+        frame,
+        type: 'chat',
+        isMultiTurn: true, // 启用多轮对话模式
+        entries: [
+          ...history,
+          { 
+            id: `user_${Date.now()}`, 
+            role: 'user', 
+            content: msg.trim(),
+            timestamp: new Date().toISOString()
+          },
+          { 
+            id: `assistant_${Date.now() + 1}`, 
+            role: 'assistant', 
+            content: '思考中…', 
+            loading: true,
+            timestamp: new Date().toISOString()
+          },
+        ],
+      }
+    })
+
+    // 延迟更新位置，确保在第二轮对话时位置正确
+    setTimeout(() => {
+      const actionInputDialog = document.querySelector('.action-input-dialog')
+      if (actionInputDialog) {
+        const rect = actionInputDialog.getBoundingClientRect()
+        const newFrame = {
+          left: rect.left,
+          bottom: window.innerHeight - rect.top + 4,
+        }
+        
+        setActionResponseDialog(prev => ({
+          ...prev,
+          frame: newFrame
+        }))
+      }
+    }, 100)
+
+    try {
+      const sim = (await import('../../services/simService.js')).default
+      const response = await sim.sendMessage({
+        source: 'pdf',
+        message: msg,
+        documentId,
+        context: selected || contextMenu.selectedText || '',
+      })
+
+      setActionResponseDialog(prev => {
+        const entries = [...prev.entries]
+        if (entries.length > 0) {
+          const lastEntry = entries[entries.length - 1]
+          if (lastEntry.loading) {
+            entries[entries.length - 1] = {
+              ...lastEntry,
+              content: response?.answer || '（无回答）',
+              loading: false,
+            }
+          }
+        }
+        return { ...prev, entries }
+      })
+
+      return response
+    } catch (err) {
+      const message = err?.message || '请求失败，请稍后重试'
+      setActionResponseDialog(prev => {
+        const entries = [...prev.entries]
+        if (entries.length > 0) {
+          const lastEntry = entries[entries.length - 1]
+          if (lastEntry.loading) {
+            entries[entries.length - 1] = {
+              ...lastEntry,
+              content: message,
+              loading: false,
+              error: true,
+            }
+          }
+        }
+        return { ...prev, entries }
+      })
+      throw err
+    }
   }
 
   const {
@@ -240,25 +496,23 @@ const PDFViewerContent = ({ file, documentId, onMarkdownUpdate }) => {
     })
     
     if (!selection.isEmpty) {
-      const newMagicSelection = {
+      // 触发MagicActionDialog
+      setMagicSelection({
         text: selection.selectedText,
-        pageIndex,
+        pageIndex: pageIndex,
         rectsNorm: selection.rectsNorm,
-        anchor,
+        anchor: anchor,
         isOpen: true
-      }
-      setMagicSelection(newMagicSelection)
+      })
     } else {
-      // Show dialog even if no text found, with manual drop option
-      const newMagicSelection = {
+      // 即使没有选中文本，也触发MagicActionDialog
+      setMagicSelection({
         text: '',
-        pageIndex,
+        pageIndex: pageIndex,
         rectsNorm: [],
-        anchor,
-        isOpen: true,
-        needsManualDrop: selection.needsManualDrop
-      }
-      setMagicSelection(newMagicSelection)
+        anchor: anchor,
+        isOpen: true
+      })
     }
   }, [viewerRef])
   
@@ -669,25 +923,46 @@ const PDFViewerContent = ({ file, documentId, onMarkdownUpdate }) => {
         onClose={() => setContextMenu({ show: false, x: 0, y: 0, selectedText: '' })}
         onCopy={() => { handleCopyText() }}
         onTranslate={(text) => {
-          const payload = text || contextMenu.selectedText || ''
-          if (!payload) return
-          setTranslationDialog({ isOpen: true, selectedText: payload })
-          setContextMenu({ show: false, x: 0, y: 0, selectedText: '' })
+          handleQuickTranslate(text)
         }}
         onQuery={() => { handleSearchSelectedText() }}
-        onSend={async (msg, selected) => {
-          try {
-            const sim = (await import('../../services/simService.js')).default
-            await sim.sendMessage({
-              source: 'pdf',
-              message: msg,
-              documentId,
-              context: selected || contextMenu.selectedText || ''
-            })
-          } catch (err) {
-            console.warn('Send failed:', err)
-          }
+        onSend={handleSendMessage}
+        isMultiTurn={actionResponseDialog.isMultiTurn}
+      />
+      <ActionResponseDialog
+        isOpen={actionResponseDialog.isOpen}
+        frame={actionResponseDialog.frame}
+        entries={actionResponseDialog.entries}
+        onHeightChange={setActionResponseHeight}
+        isMultiTurn={actionResponseDialog.isMultiTurn}
+      />
+      
+      {/* Magic Action Dialog */}
+      <MagicActionDialog
+        isOpen={magicSelection.isOpen}
+        selectedText={magicSelection.text}
+        initialPosition={magicSelection.anchor}
+        onClose={() => setMagicSelection({ text: '', pageIndex: -1, rectsNorm: [], anchor: null, isOpen: false })}
+        onTranslate={(text) => {
+          // 触发翻译功能
+          setTranslationDialog({
+            isOpen: true,
+            selectedText: text || magicSelection.text
+          })
+          setMagicSelection({ text: '', pageIndex: -1, rectsNorm: [], anchor: null, isOpen: false })
         }}
+        onExplain={() => {
+          // 在MagicActionDialog中直接开始解释对话
+          console.log('Starting explain conversation in MagicActionDialog')
+        }}
+        onAnnotate={() => {
+          // 在MagicActionDialog中直接开始注释对话
+          console.log('Starting annotate conversation in MagicActionDialog')
+        }}
+        // 新增对话功能props
+        onSendMessage={handleSendMessage}
+        documentId={documentId}
+        isMultiTurn={actionResponseDialog.isMultiTurn}
       />
 
       {/* PDF Document with overlays and interactions inside the scroll container */}
@@ -708,6 +983,7 @@ const PDFViewerContent = ({ file, documentId, onMarkdownUpdate }) => {
         onMagicWandMouseDown={handleMagicWandMouseDown}
         onMagicWandMouseMove={handleMagicWandMouseMove}
         onMagicWandMouseUp={handleMagicWandMouseUp}
+        magicSelection={magicSelection}
       >
         {/* PDF Overlays */}
         <PdfOverlays 
@@ -719,7 +995,6 @@ const PDFViewerContent = ({ file, documentId, onMarkdownUpdate }) => {
         <HighlightLayer
           overlays={highlightOverlays}
           onOverlayClick={openHighlightPopover}
-          magicSelection={magicSelection.isOpen ? magicSelection : null}
         />
         {/* Magic wand layer */}
         <MagicWandLayer
@@ -782,91 +1057,6 @@ const PDFViewerContent = ({ file, documentId, onMarkdownUpdate }) => {
         documentId={documentId}
       />
       
-      {/* Magic Action Dialog */}
-      <MagicActionDialog
-        isOpen={magicSelection.isOpen}
-        selectedText={magicSelection.text}
-        initialPosition={magicSelection.anchor}
-        needsManualDrop={magicSelection.needsManualDrop}
-
-        onTranslate={(text, targetLang) => {
-          setTranslationDialog({
-            isOpen: true,
-            selectedText: text
-          })
-          // Close magic wand dialog to avoid overlapping
-          setMagicSelection(prev => ({ ...prev, isOpen: false }))
-        }}
-        onExplain={async (text) => {
-          try {
-            const result = await explainText(text, {
-              documentId,
-              pageIndex: magicSelection.pageIndex,
-              rectsNorm: magicSelection.rectsNorm
-            })
-            
-            if (result.success) {
-              // TODO: Show explanation in a dialog or panel
-              console.log('Explanation:', result.explanation)
-            } else {
-              console.error('Explain failed:', result.error)
-            }
-          } catch (error) {
-            console.error('Explain error:', error)
-          }
-        }}
-        onAnnotate={async (text) => {
-          try {
-            // Create a mock selection object to apply highlight directly
-            const pageElement = viewerRef.current?.querySelector(`[data-page-number="${magicSelection.pageIndex + 1}"]`)
-            if (!pageElement) {
-              console.error('Page element not found for highlight')
-              return
-            }
-            
-            const pageRect = pageElement.getBoundingClientRect()
-            const containerRect = viewerRef.current.getBoundingClientRect()
-            
-            // Convert normalized rects back to absolute positions
-            const clientRects = magicSelection.rectsNorm.map(rect => ({
-              left: pageRect.left + (rect.x * pageRect.width),
-              top: pageRect.top + (rect.y * pageRect.height),
-              width: rect.w * pageRect.width,
-              height: rect.h * pageRect.height,
-              right: pageRect.left + (rect.x * pageRect.width) + (rect.w * pageRect.width),
-              bottom: pageRect.top + (rect.y * pageRect.height) + (rect.h * pageRect.height)
-            }))
-            
-            const mockSelection = {
-              rangeCount: 1,
-              getRangeAt: () => ({
-                toString: () => text,
-                getClientRects: () => clientRects,
-                commonAncestorContainer: pageElement,
-                startContainer: pageElement,
-                endContainer: pageElement,
-                startOffset: 0,
-                endOffset: text.length
-              }),
-              removeAllRanges: () => {}
-            }
-            
-            // Apply highlight using existing highlight functionality
-            await applyHighlight(mockSelection)
-            
-            // Close the magic action dialog
-            setMagicSelection(prev => ({ ...prev, isOpen: false }))
-            
-            console.log('Text highlighted successfully:', text)
-          } catch (error) {
-            console.error('Annotate error:', error)
-          }
-        }}
-        onClose={() => {
-          setMagicSelection({ text: '', pageIndex: -1, rectsNorm: [], anchor: null, isOpen: false })
-          clearAllPaths() // Clear mouse trails when dialog is closed
-        }}
-      />
     </div>
   )
 }

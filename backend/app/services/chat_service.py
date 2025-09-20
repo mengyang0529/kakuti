@@ -46,13 +46,13 @@ class ChatService:
                 "Context:\n"
                 f"{context}\n\n"
             )
+        
         prompt = (
             "You are an expert assistant helping a user read a PDF document."
             " Provide a clear, direct answer using the supplied context when it is useful."
             " If the context does not contain the answer, rely on general knowledge but mention the limitation.\n\n"
             f"{context_block}"
             f"User question:\n{question}\n\n"
-            "Respond in the same language as the question and keep the answer concise but helpful."
         )
         return prompt
 

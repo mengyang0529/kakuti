@@ -300,3 +300,101 @@ kbd {
     animation: none;
   }
 }
+
+/* 对话模式样式 */
+.magic-dialog-conversation {
+  margin-top: 16px;
+  border-top: 1px solid rgba(0, 0, 0, 0.1);
+  padding-top: 16px;
+}
+
+.magic-dialog-messages {
+  max-height: 200px;
+  overflow-y: auto;
+  margin-bottom: 12px;
+  padding: 8px;
+  background: rgba(0, 0, 0, 0.02);
+  border-radius: 8px;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.magic-dialog-message {
+  display: flex;
+  flex-direction: column;
+}
+
+.magic-dialog-message.user {
+  align-self: flex-end;
+}
+
+.magic-dialog-message.assistant {
+  align-self: flex-start;
+}
+
+.magic-dialog-message-content {
+  max-width: 80%;
+  padding: 8px 12px;
+  border-radius: 12px;
+  font-size: 14px;
+  line-height: 1.4;
+  word-wrap: break-word;
+}
+
+.magic-dialog-message.user .magic-dialog-message-content {
+  background: rgba(34, 197, 94, 0.8);
+  color: white;
+  border: 1px solid rgba(34, 197, 94, 0.6);
+}
+
+.magic-dialog-message.assistant .magic-dialog-message-content {
+  background: rgba(59, 130, 246, 0.8);
+  color: white;
+  border: 1px solid rgba(59, 130, 246, 0.6);
+}
+
+.magic-dialog-loading {
+  color: #d1d5db;
+  font-style: italic;
+}
+
+.magic-dialog-input {
+  display: flex;
+  gap: 8px;
+  align-items: center;
+}
+
+.magic-dialog-input input {
+  flex: 1;
+  padding: 8px 12px;
+  border: 1px solid #d1d5db;
+  border-radius: 6px;
+  font-size: 14px;
+  outline: none;
+}
+
+.magic-dialog-input input:focus {
+  border-color: #3b82f6;
+  box-shadow: 0 0 0 2px rgba(59, 130, 246, 0.1);
+}
+
+.magic-dialog-input button {
+  padding: 8px 16px;
+  background: #3b82f6;
+  color: white;
+  border: none;
+  border-radius: 6px;
+  font-size: 14px;
+  cursor: pointer;
+  transition: background-color 0.2s;
+}
+
+.magic-dialog-input button:hover:not(:disabled) {
+  background: #2563eb;
+}
+
+.magic-dialog-input button:disabled {
+  background: #9ca3af;
+  cursor: not-allowed;
+}

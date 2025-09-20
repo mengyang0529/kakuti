@@ -11,13 +11,22 @@ const MagicActionDialog = ({
   onTranslate,
   onExplain,
   onAnnotate,
-  onClose
+  onClose,
+  // 新增对话功能props
+  onSendMessage,
+  documentId,
+  isMultiTurn = false
 }) => {
 
   
   const [isCollapsed, setIsCollapsed] = useState(false)
   const [isLoading, setIsLoading] = useState(false)
   const [loadingAction, setLoadingAction] = useState('')
+  
+  // 对话功能状态
+  const [conversationMode, setConversationMode] = useState(false) // 是否进入对话模式
+  const [inputMessage, setInputMessage] = useState('')
+  const [conversationHistory, setConversationHistory] = useState([])
   
   
 
@@ -43,39 +52,104 @@ const MagicActionDialog = ({
   const handleExplain = useCallback(async () => {
     if (!selectedText.trim()) return
     
-    setIsLoading(true)
-    setLoadingAction('explain')
+    // 进入对话模式
+    setConversationMode(true)
+    setInputMessage(`请解释这段文字：${selectedText}`)
     
-    try {
-      await onExplain(selectedText)
-    } catch (error) {
-      console.error('Explain failed:', error)
-    } finally {
-      setIsLoading(false)
-      setLoadingAction('')
-    }
-  }, [selectedText, onExplain])
+    // 添加初始消息到对话历史
+    setConversationHistory([
+      {
+        id: `user_${Date.now()}`,
+        role: 'user',
+        content: `请解释这段文字：${selectedText}`,
+        timestamp: new Date().toISOString()
+      }
+    ])
+  }, [selectedText])
 
   const handleAnnotate = useCallback(async () => {
     if (!selectedText.trim()) return
     
-    setIsLoading(true)
-    setLoadingAction('annotate')
+    // 进入对话模式
+    setConversationMode(true)
+    setInputMessage(`请为这段文字添加注释：${selectedText}`)
     
-    try {
-      await onAnnotate(selectedText)
-    } catch (error) {
-      console.error('Annotate failed:', error)
-    } finally {
-      setIsLoading(false)
-      setLoadingAction('')
-    }
-  }, [selectedText, onAnnotate])
+    // 添加初始消息到对话历史
+    setConversationHistory([
+      {
+        id: `user_${Date.now()}`,
+        role: 'user',
+        content: `请为这段文字添加注释：${selectedText}`,
+        timestamp: new Date().toISOString()
+      }
+    ])
+  }, [selectedText])
   
   const handleManualDrop = useCallback(() => {
     // TODO: Implement manual drop functionality
     console.log('Manual drop requested')
   }, [])
+  
+  // 发送消息处理函数
+  const handleSendMessage = useCallback(async (message) => {
+    if (!message?.trim() || !onSendMessage) return
+    
+    const msg = message.trim()
+    
+    // 添加用户消息到历史
+    const userMessage = {
+      id: `user_${Date.now()}`,
+      role: 'user',
+      content: msg,
+      timestamp: new Date().toISOString()
+    }
+    
+    // 添加AI思考中的消息
+    const thinkingMessage = {
+      id: `assistant_${Date.now() + 1}`,
+      role: 'assistant',
+      content: '思考中…',
+      loading: true,
+      timestamp: new Date().toISOString()
+    }
+    
+    setConversationHistory(prev => [...prev, userMessage, thinkingMessage])
+    
+    try {
+      // 调用父组件的发送消息函数
+      const response = await onSendMessage(msg, selectedText)
+      
+      // 更新AI消息
+      setConversationHistory(prev => {
+        const newHistory = [...prev]
+        const lastMessage = newHistory[newHistory.length - 1]
+        if (lastMessage.loading) {
+          newHistory[newHistory.length - 1] = {
+            ...lastMessage,
+            content: response?.answer || '（无回答）',
+            loading: false,
+          }
+        }
+        return newHistory
+      })
+      
+    } catch (error) {
+      const message = error?.message || '请求失败，请稍后重试'
+      setConversationHistory(prev => {
+        const newHistory = [...prev]
+        const lastMessage = newHistory[newHistory.length - 1]
+        if (lastMessage.loading) {
+          newHistory[newHistory.length - 1] = {
+            ...lastMessage,
+            content: message,
+            loading: false,
+            error: true,
+          }
+        }
+        return newHistory
+      })
+    }
+  }, [onSendMessage, selectedText])
   
   if (!isOpen) return null
   
@@ -228,6 +302,51 @@ const MagicActionDialog = ({
       <div className="magic-dialog-shortcuts">
 
       </div>
+      
+      {/* 对话模式UI */}
+      {conversationMode && (
+        <div className="magic-dialog-conversation">
+          {/* 对话历史显示 */}
+          <div className="magic-dialog-messages">
+            {conversationHistory.map((message) => (
+              <div key={message.id} className={`magic-dialog-message ${message.role}`}>
+                <div className="magic-dialog-message-content">
+                  {message.loading ? (
+                    <span className="magic-dialog-loading">思考中…</span>
+                  ) : (
+                    message.content
+                  )}
+                </div>
+              </div>
+            ))}
+          </div>
+          
+          {/* 输入框 */}
+          <div className="magic-dialog-input">
+            <input
+              type="text"
+              value={inputMessage}
+              onChange={(e) => setInputMessage(e.target.value)}
+              placeholder="输入你的问题..."
+              onKeyPress={(e) => {
+                if (e.key === 'Enter') {
+                  handleSendMessage(inputMessage)
+                  setInputMessage('')
+                }
+              }}
+            />
+            <button
+              onClick={() => {
+                handleSendMessage(inputMessage)
+                setInputMessage('')
+              }}
+              disabled={!inputMessage.trim()}
+            >
+              发送
+            </button>
+          </div>
+        </div>
+      )}
     </DraggableModal>
   )
 }
@@ -244,13 +363,21 @@ MagicActionDialog.propTypes = {
   onTranslate: PropTypes.func.isRequired,
   onExplain: PropTypes.func.isRequired,
   onAnnotate: PropTypes.func.isRequired,
-  onClose: PropTypes.func.isRequired
+  onClose: PropTypes.func.isRequired,
+  
+  // 新增对话功能props
+  onSendMessage: PropTypes.func,
+  documentId: PropTypes.string,
+  isMultiTurn: PropTypes.bool
 }
 
 MagicActionDialog.defaultProps = {
   selectedText: '',
   initialPosition: null,
-  needsManualDrop: false
+  needsManualDrop: false,
+  onSendMessage: null,
+  documentId: null,
+  isMultiTurn: false
 }
 
 export default MagicActionDialog

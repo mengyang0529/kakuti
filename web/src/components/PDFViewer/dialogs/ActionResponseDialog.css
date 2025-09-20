@@ -1,0 +1,116 @@
+.action-response-dialog {
+  position: fixed;
+  width: 400px; /* 与ActionInputDialog保持一致 */
+  max-width: calc(100vw - 32px);
+  background: rgba(31, 41, 55, 0.4); /* 灰黑色背景，60%透明 */
+  color: #ffffff; /* 白色文字 */
+  border: 1px solid rgba(75, 85, 99, 0.3); /* 半透明边框 */
+  border-radius: 12px; /* 与ActionInputDialog保持一致的圆角 */
+  box-shadow: 0 12px 32px rgba(0,0,0,0.3); /* 加深阴影 */
+  padding: 16px;
+  z-index: 10005;
+  pointer-events: auto;
+  backdrop-filter: blur(8px); /* 添加毛玻璃效果 */
+}
+
+/* 多轮对话模式样式 */
+.action-response-dialog.ard-multi-turn {
+  border-bottom-left-radius: 0; /* 与ActionInputDialog连接时去掉下圆角 */
+  border-bottom-right-radius: 0;
+  border-bottom: none; /* 去掉底部边框，与ActionInputDialog无缝连接 */
+  box-shadow: 0 -12px 32px rgba(0,0,0,0.3); /* 调整阴影方向，加深阴影 */
+}
+
+.ard-body {
+  display: flex;
+  flex-direction: column;
+  gap: 12px; /* 统一间距 */
+  max-height: 300px; /* 增加高度以支持多轮对话 */
+  overflow-y: auto;
+  padding: 4px; /* 给滚动条留空间 */
+}
+
+/* 滚动条样式 */
+.ard-body::-webkit-scrollbar {
+  width: 6px;
+}
+
+.ard-body::-webkit-scrollbar-track {
+  background: #f1f1f1;
+  border-radius: 3px;
+}
+
+.ard-body::-webkit-scrollbar-thumb {
+  background: #c1c1c1;
+  border-radius: 3px;
+}
+
+.ard-body::-webkit-scrollbar-thumb:hover {
+  background: #a8a8a8;
+}
+
+.ard-bubble {
+  border-radius: 12px;
+  padding: 12px 16px;
+  display: flex;
+  flex-direction: column;
+  max-width: 80%; /* 限制气泡最大宽度 */
+  word-wrap: break-word;
+}
+
+/* 用户消息：右对齐，深绿色气泡 */
+.ard-bubble.user {
+  align-self: flex-end;
+  background: rgba(34, 197, 94, 0.8); /* 深绿色背景，80%不透明 */
+  color: #ffffff; /* 白色文字 */
+  border: 1px solid rgba(34, 197, 94, 0.6); /* 深绿色边框 */
+}
+
+/* AI消息：左对齐，深蓝色气泡 */
+.ard-bubble.assistant {
+  align-self: flex-start;
+  background: rgba(59, 130, 246, 0.8); /* 深蓝色背景，80%不透明 */
+  color: #ffffff; /* 白色文字 */
+  border: 1px solid rgba(59, 130, 246, 0.6); /* 深蓝色边框 */
+}
+
+/* 错误状态：深红色提示 */
+.ard-bubble.ard-bubble-error {
+  background: rgba(239, 68, 68, 0.8); /* 深红色背景，80%不透明 */
+  color: #ffffff; /* 白色文字 */
+  border: 1px solid rgba(239, 68, 68, 0.6); /* 深红色边框 */
+}
+
+.ard-content {
+  font-size: 14px;
+  line-height: 1.6;
+  white-space: pre-wrap;
+  word-break: break-word;
+}
+
+.ard-loading {
+  color: #d1d5db; /* 浅灰色文字，在深色背景下更清晰 */
+  font-style: italic;
+}
+
+/* 空状态样式 */
+.ard-empty-state {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: 40px 20px;
+  color: #d1d5db; /* 浅灰色文字，在深色背景下更清晰 */
+  text-align: center;
+}
+
+.ard-empty-icon {
+  font-size: 32px;
+  margin-bottom: 12px;
+  opacity: 0.6;
+}
+
+.ard-empty-text {
+  font-size: 14px;
+  font-weight: 500;
+}

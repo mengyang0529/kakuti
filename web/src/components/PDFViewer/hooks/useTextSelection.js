@@ -6,8 +6,8 @@ const useTextSelection = (viewerRef) => {
 
   useEffect(() => {
     const handleMouseUp = (e) => {
-      // Ignore clicks inside the action input dialog
-      if (e.target.closest && e.target.closest('.action-input-dialog')) {
+      // Ignore clicks inside the action input dialog or magic action dialog
+      if (e.target.closest && (e.target.closest('.action-input-dialog') || e.target.closest('.magic-action-dialog'))) {
         return
       }
       const selection = window.getSelection()
@@ -76,7 +76,8 @@ const useTextSelection = (viewerRef) => {
     const handleMouseDown = (e) => {
       // Don't close if clicking on legacy context menu or new action dialog
       if ((e.target.closest && e.target.closest('.context-menu')) ||
-          (e.target.closest && e.target.closest('.action-input-dialog'))) {
+          (e.target.closest && e.target.closest('.action-input-dialog')) ||
+          (e.target.closest && e.target.closest('.magic-action-dialog'))) {
         return
       }
       setContextMenu({ show: false, x: 0, y: 0, selectedText: '', rects: [] })

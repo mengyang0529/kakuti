@@ -70,6 +70,17 @@ function App() {
   const [showNoteEditor, setShowNoteEditor] = useState(false)
   const [isEditingWsName, setIsEditingWsName] = useState(false)
   const [wsNameDraft, setWsNameDraft] = useState('')
+  const [showActionResponse, setShowActionResponse] = useState(false)
+
+  // Show ActionResponse demo when enabled
+  useEffect(() => {
+    if (showActionResponse) {
+      const timer = setTimeout(() => {
+        setShowActionResponse(false)
+      }, 30000) // Auto-close after 30 seconds
+      return () => clearTimeout(timer)
+    }
+  }, [showActionResponse])
 
   // Close PDF overlay on ESC
   useEffect(() => {

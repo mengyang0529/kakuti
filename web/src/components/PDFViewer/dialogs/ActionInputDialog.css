@@ -9,6 +9,43 @@
   --aid-selection-fg: inherit;
 }
 
+/* 多轮对话模式：与ActionResponseDialog连接时调整样式 */
+.action-input-dialog.aid-multi-turn {
+  border-top-left-radius: 0; /* 与ActionResponseDialog连接时去掉上圆角 */
+  border-top-right-radius: 0;
+  border-top: none; /* 去掉顶部边框，与ActionResponseDialog无缝连接 */
+  box-shadow: 0 12px 32px rgba(0,0,0,0.18); /* 保持底部阴影 */
+}
+
+.aid-container {
+  position: fixed;
+  z-index: 1000;
+  width: 400px;
+  max-width: 90vw;
+  background: white;
+  border-radius: 8px;
+  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.15);
+  overflow: hidden;
+  opacity: 0;
+  transform: translateY(10px);
+  pointer-events: none;
+  transition: opacity 0.2s ease, transform 0.2s ease;
+}
+
+/* 嵌入模式样式 */
+.aid-container.aid-embedded {
+  position: relative;
+  width: 100%;
+  max-width: 100%;
+  transform: none;
+  opacity: 1;
+  pointer-events: auto;
+  box-shadow: none;
+  border-radius: 0;
+  border-bottom-left-radius: 8px;
+  border-bottom-right-radius: 8px;
+}
+
 /* Ensure any text selection inside the dialog uses the highlight color */
 .action-input-dialog ::selection {
   background-color: var(--aid-selection-bg) !important;
