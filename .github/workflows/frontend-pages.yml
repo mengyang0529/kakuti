@@ -40,7 +40,7 @@ jobs:
       # 注入 Vite/构建所需环境变量（可从 Secrets 注入后端地址/Key）
       - name: Inject env for Vite
         run: |
-          echo "VITE_BASE_PATH=/kakuti/" >> $GITHUB_ENV
+          echo "VITE_BASE_PATH=/" >> $GITHUB_ENV
           echo "VITE_API_BASE=${{ secrets.VITE_API_BASE }}" >> $GITHUB_ENV
           echo "VITE_API_KEY=${{ secrets.VITE_API_KEY }}" >> $GITHUB_ENV
           echo "ROLLUP_SKIP_NODEJS_NATIVE=1" >> $GITHUB_ENV
