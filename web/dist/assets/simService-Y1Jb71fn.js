@@ -1,1 +1,2 @@
 import{A as d,a as c}from"./index-Cptxm2Wv.js";const l=c();class p{getHeadersWithContentType(){return{"Content-Type":"application/json","X-API-Key":d}}async sendMessage({source:t,message:s,workspaceId:n=null,documentId:a=null,context:o=null}){const i={source:t,message:s,workspace_id:n,document_id:a,context:o},e=await fetch(`${l}/simulate`,{method:"POST",headers:this.getHeadersWithContentType(),body:JSON.stringify(i)});if(!e.ok){const r=await e.json();throw new Error(r.detail||"Failed to send message")}return await e.json()}}const y=new p;export{y as default};
+
