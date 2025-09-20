@@ -113,3 +113,5 @@ export function reconfigureWorker(workerUrl) {
   }
   return false
 }
+
+// FUCK YOU PAGES
