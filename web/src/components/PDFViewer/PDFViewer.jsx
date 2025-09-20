@@ -218,40 +218,65 @@ const PDFViewerContent = ({ file, documentId, onMarkdownUpdate }) => {
     return { left, bottom }
   }, [])
 
-  const handleQuickTranslate = async (textArg) => {
+  const handleQuickTranslate = async (textArg, targetLanguage = 'zh') => {
+    console.log('handleQuickTranslate called with:', { textArg, targetLanguage })
     const payload = textArg || contextMenu.selectedText || ''
-    if (!payload.trim()) return
+    if (!payload.trim()) {
+      console.log('handleQuickTranslate: no payload, returning')
+      return
+    }
     const anchor = contextMenu.show
       ? { x: contextMenu.x, y: contextMenu.y }
       : lastActionAnchor
     setLastActionAnchor(anchor)
-    const position = computeResponsePosition(anchor, actionResponseHeight)
+    // 计算位置：ActionResponseDialog直接定位在ActionInputDialog上方
+    const position = {
+      left: anchor.x,
+      bottom: window.innerHeight - anchor.y + 4, // 紧贴ActionInputDialog上方
+    }
+    console.log('handleQuickTranslate: position calculated:', position)
+    
+    // 获取目标语言名称
+    const languageNames = {
+      'en': 'English',
+      'zh': '中文',
+      'ja': '日本語',
+      'ko': '한국어',
+      'fr': 'Français',
+      'de': 'Deutsch',
+      'es': 'Español',
+      'ru': 'Русский',
+    }
+    const targetLangName = languageNames[targetLanguage] || targetLanguage
+    
     setActionResponseDialog(prev => {
       const history = prev.isOpen && prev.type === 'translate' ? [...prev.entries] : []
       return {
         isOpen: true,
-        position,
+        frame: position, // 使用 frame 而不是 position
         type: 'translate',
+        isMultiTurn: true, // 启用多轮对话模式
         entries: [
           ...history,
           { role: 'user', label: '原文', content: payload },
-          { role: 'assistant', label: '翻译', content: '翻译中…', loading: true },
+          { role: 'assistant', label: `翻译到${targetLangName}`, content: '翻译中…', loading: true },
         ],
       }
     })
 
     try {
-      const result = await translateText(payload, 'zh')
+      const result = await translateText(payload, targetLanguage)
       setActionResponseDialog(prev => {
         const entries = [...prev.entries]
         if (entries.length > 0) {
           entries[entries.length - 1] = {
             role: 'assistant',
-            label: '翻译',
+            label: `翻译到${targetLangName}`,
             content: result?.text || '(空)',
+            loading: false,
           }
         }
-        return { ...prev, position, entries }
+        return { ...prev, frame: position, entries, isMultiTurn: true }
       })
     } catch (error) {
       const message = error?.message || '翻译失败，请稍后再试'
@@ -262,9 +287,10 @@ const PDFViewerContent = ({ file, documentId, onMarkdownUpdate }) => {
             role: 'assistant',
             label: '错误',
             content: message,
+            loading: false,
           }
         }
-        return { ...prev, position, entries }
+        return { ...prev, frame: position, entries, isMultiTurn: true }
       })
     }
   }
@@ -962,8 +988,8 @@ const PDFViewerContent = ({ file, documentId, onMarkdownUpdate }) => {
           resetMagicWandTrigger()
         }}
         onCopy={() => { handleCopyText() }}
-        onTranslate={(text) => {
-          handleQuickTranslate(text)
+        onTranslate={(text, targetLanguage = 'zh') => {
+          handleQuickTranslate(text, targetLanguage)
         }}
         onQuery={() => { handleSearchSelectedText() }}
         onSend={handleSendMessage}

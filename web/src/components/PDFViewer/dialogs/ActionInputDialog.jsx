@@ -17,7 +17,21 @@ export default function ActionInputDialog({
 }) {
   const [message, setMessage] = useState(selectedText || '')
   const [isSending, setIsSending] = useState(false)
+  const [showTranslateDropdown, setShowTranslateDropdown] = useState(false)
   const inputRef = useRef(null)
+  const translateDropdownRef = useRef(null)
+
+  // 支持的语言列表
+  const languages = [
+    { code: 'en', name: 'English', flag: '🇺🇸' },
+    { code: 'zh', name: '中文', flag: '🇨🇳' },
+    { code: 'ja', name: '日本語', flag: '🇯🇵' },
+    { code: 'ko', name: '한국어', flag: '🇰🇷' },
+    { code: 'fr', name: 'Français', flag: '🇫🇷' },
+    { code: 'de', name: 'Deutsch', flag: '🇩🇪' },
+    { code: 'es', name: 'Español', flag: '🇪🇸' },
+    { code: 'ru', name: 'Русский', flag: '🇷🇺' },
+  ]
 
   // Autofocus and sync content when opened or selectedText changes
   useEffect(() => {
@@ -37,6 +51,29 @@ export default function ActionInputDialog({
       }
     })
   }, [isOpen, selectedText])
+
+  // 处理点击外部关闭下拉菜单
+  useEffect(() => {
+    const handleClickOutside = (event) => {
+      if (translateDropdownRef.current && !translateDropdownRef.current.contains(event.target)) {
+        setShowTranslateDropdown(false)
+      }
+    }
+
+    if (showTranslateDropdown) {
+      document.addEventListener('mousedown', handleClickOutside)
+      return () => document.removeEventListener('mousedown', handleClickOutside)
+    }
+  }, [showTranslateDropdown])
+
+  // 处理语言选择
+  const handleLanguageSelect = (languageCode) => {
+    console.log('handleLanguageSelect called with:', { languageCode, selectedText, message })
+    setShowTranslateDropdown(false)
+    if (onTranslate) {
+      onTranslate(selectedText || message, languageCode)
+    }
+  }
 
   console.log('ActionInputDialog render, isOpen:', isOpen, 'selectedText:', selectedText?.substring(0, 50))
   
@@ -151,18 +188,34 @@ export default function ActionInputDialog({
             <path d="M5 15H4a2 2 0 01-2-2V4a2 2 0 012-2h9a2 2 0 012 2v1"></path>
           </svg>
         </button>
-        <button
-          className="aid-icon-btn"
-          onClick={() => onTranslate && onTranslate(selectedText || message)}
-          aria-label="Translate"
-          title="翻译"
-        >
-          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#0f172a" strokeWidth="2">
-            <circle cx="12" cy="12" r="10"></circle>
-            <path d="M2 12h20"></path>
-            <path d="M12 2a15.3 15.3 0 014 10 15.3 15.3 0 01-4 10 15.3 15.3 0 01-4-10 15.3 15.3 0 014-10z"></path>
-          </svg>
-        </button>
+        <div className="aid-translate-dropdown" ref={translateDropdownRef}>
+          <button
+            className="aid-icon-btn"
+            onClick={() => setShowTranslateDropdown(!showTranslateDropdown)}
+            aria-label="Translate"
+            title="翻译"
+          >
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#0f172a" strokeWidth="2">
+              <circle cx="12" cy="12" r="10"></circle>
+              <path d="M2 12h20"></path>
+              <path d="M12 2a15.3 15.3 0 014 10 15.3 15.3 0 01-4 10 15.3 15.3 0 01-4-10 15.3 15.3 0 014-10z"></path>
+            </svg>
+          </button>
+          {showTranslateDropdown && (
+            <div className="aid-translate-menu">
+              {languages.map((lang) => (
+                <button
+                  key={lang.code}
+                  className="aid-translate-option"
+                  onClick={() => handleLanguageSelect(lang.code)}
+                >
+                  <span className="aid-translate-flag">{lang.flag}</span>
+                  <span className="aid-translate-name">{lang.name}</span>
+                </button>
+              ))}
+            </div>
+          )}
+        </div>
         <button
           className="aid-icon-btn"
           onClick={onQuery}
@@ -185,7 +238,7 @@ ActionInputDialog.propTypes = {
   selectedText: PropTypes.string,
   onClose: PropTypes.func.isRequired,
   onCopy: PropTypes.func.isRequired,
-  onTranslate: PropTypes.func.isRequired,
+  onTranslate: PropTypes.func.isRequired, // (text, targetLanguage) => void
   onQuery: PropTypes.func.isRequired,
   onSend: PropTypes.func,
   embedded: PropTypes.bool,

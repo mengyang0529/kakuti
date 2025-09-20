@@ -225,3 +225,63 @@
 .aid-icon-btn svg circle {
   stroke-width: 1.6 !important;
 }
+
+/* 翻译下拉菜单样式 */
+.aid-translate-dropdown {
+  position: relative;
+  display: inline-block;
+}
+
+.aid-translate-menu {
+  position: absolute;
+  top: 100%;
+  left: 0;
+  z-index: 1000;
+  background: white;
+  border: 1px solid #e2e8f0;
+  border-radius: 8px;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+  min-width: 160px;
+  max-height: 200px;
+  overflow-y: auto;
+  margin-top: 4px;
+}
+
+.aid-translate-option {
+  width: 100%;
+  padding: 8px 12px;
+  border: none;
+  background: none;
+  text-align: left;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 14px;
+  color: #0f172a;
+  transition: background-color 0.15s ease;
+}
+
+.aid-translate-option:hover {
+  background-color: #f1f5f9;
+}
+
+.aid-translate-option:first-child {
+  border-top-left-radius: 8px;
+  border-top-right-radius: 8px;
+}
+
+.aid-translate-option:last-child {
+  border-bottom-left-radius: 8px;
+  border-bottom-right-radius: 8px;
+}
+
+.aid-translate-flag {
+  font-size: 16px;
+  line-height: 1;
+}
+
+.aid-translate-name {
+  flex: 1;
+  white-space: nowrap;
+}
