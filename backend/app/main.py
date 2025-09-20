@@ -97,7 +97,7 @@ if settings.ALLOW_CORS:
     logger.info("CORS allowed origins: %s", settings.allowed_origins)
     app.add_middleware(
         CORSMiddleware,
-        allow_origins=settings.allowed_origins,  # ['https://mengyang0529.github.io'] 之类
+        allow_origins=settings.allowed_origins, 
         allow_credentials=True,
         allow_methods=["*"],
         allow_headers=["*"],  # ✅ 含 X-API-Key/Content-Type 等

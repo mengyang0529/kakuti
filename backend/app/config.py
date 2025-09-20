@@ -108,7 +108,7 @@ class Settings(BaseModel):
     def allowed_origins(self) -> list[str]:
         raw = self.RAW_ALLOWED_ORIGINS
         if not raw:
-            return ["http://localhost:5173", "https://mengyang0529.github.io"]
+            return ["http://localhost:5173", "https://mengyang0529.github.io", "https://kakuti.xyz"]
         return [origin.strip() for origin in raw.split(",") if origin.strip()]
 
     # ADD THIS NEW METHOD

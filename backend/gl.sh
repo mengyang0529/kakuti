@@ -37,7 +37,7 @@ gcloud run deploy "${SERVICE_NAME}" \
   --region "${REGION}" \
   --allow-unauthenticated \
   --memory=2Gi \
-  --set-env-vars "^|^REQUIRE_API_KEY=true|GEMINI_REQUEST_TIMEOUT=30|DOCMIND_DB=/tmp/docmind.db|LLM_PROVIDER=gemini|HF_HOME=/tmp|ALLOWED_ORIGINS=https://mengyang0529.github.io,http://localhost:5173" \
-  --set-secrets "API_KEY=kakuti-api-key:latest,GEMINI_API_KEY=kakuti-gemini-key:latest"
+  --set-env-vars "^|^REQUIRE_API_KEY=true|GEMINI_REQUEST_TIMEOUT=30|DOCMIND_DB=/tmp/docmind.db|LLM_PROVIDER=gemini|HF_HOME=/tmp|ALLOWED_ORIGINS=https://mengyang0529.github.io,http://localhost:5173,https://kakuti.xyz" \
+  --set-secrets "API_KEY=kakuti-api-key:latest"
 
 echo ">>> Deployment complete!"

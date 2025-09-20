@@ -62,5 +62,5 @@ jobs:
             --min-instances=0 --max-instances=4 \
             --memory=2Gi \
             --cpu=1 --timeout=60 \
-            --update-env-vars="REQUIRE_API_KEY=true,GEMINI_REQUEST_TIMEOUT=30,RAW_ALLOWED_ORIGINS=https://mengyang0529.github.io,http://localhost:5173" \
+            --update-env-vars="REQUIRE_API_KEY=true,GEMINI_REQUEST_TIMEOUT=30,RAW_ALLOWED_ORIGINS=https://mengyang0529.github.io,http://localhost:5173, https://kakuti.xyz" \
             --update-secrets="API_KEY=Kakuti-Secret:latest"
