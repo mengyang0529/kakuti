@@ -73,10 +73,16 @@ jobs:
           [ -d dist ] && [ "$(ls -A dist | wc -l)" -gt 0 ] || (echo "dist is empty!" && exit 1)
 
       # 上传工件；注意这里必须填仓库根相对路径 → web/dist
+      - name: Prepare Pages artifact
+        run: |
+          rm -rf ../pages-dist
+          mkdir -p ../pages-dist
+          cp -r dist/* ../pages-dist/
+
       - name: Upload artifact
         uses: actions/upload-pages-artifact@v3
         with:
-          path: web/dist
+          path: pages-dist
 
   deploy:
     needs: build
