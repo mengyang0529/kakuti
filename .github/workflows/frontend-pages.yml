@@ -70,6 +70,8 @@ jobs:
         run: |
           ls -la
           ls -la dist || true
+          echo "检查dist/assets目录内容："
+          ls -la dist/assets || true
           [ -d dist ] && [ "$(ls -A dist | wc -l)" -gt 0 ] || (echo "dist is empty!" && exit 1)
 
       # 上传工件；注意这里必须填仓库根相对路径 → web/dist
