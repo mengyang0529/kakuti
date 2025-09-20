@@ -179,13 +179,6 @@ const useTextSelection = (viewerRef, clearMagicWandHighlights) => {
     }, 100)
   }
 
-  const handleTranslateText = () => {
-    // Just close context menu, translation will be handled by the dialog
-    setContextMenu({ show: false, x: 0, y: 0, selectedText: '' })
-    magicWandTriggerRef.current = false
-    setIsMagicWandTriggered(false)
-    // Don't clear selection immediately to allow the dialog to access it
-  }
 
   const resetMagicWandTrigger = () => {
     magicWandTriggerRef.current = false
@@ -196,7 +189,6 @@ const useTextSelection = (viewerRef, clearMagicWandHighlights) => {
     selectedText,
     contextMenu,
     handleCopyText,
-    handleTranslateText,
     setContextMenu,
     triggerActionInputDialog,
     resetMagicWandTrigger

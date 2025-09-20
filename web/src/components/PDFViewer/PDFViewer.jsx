@@ -12,7 +12,6 @@ import PdfOutlineDrawer from './components/PdfOutlineDrawer'
 import PdfDocument from './components/PdfDocument'
 import PdfOverlays from './components/PdfOverlays'
 import VerticalToolbar from './components/VerticalToolbar'
-import TranslationDialog from './components/TranslationDialog'
 import OverviewDialog from './components/OverviewDialog'
 import MagicWandLayer from './components/MagicWandLayer'
 import ActionInputDialog from './dialogs/ActionInputDialog'
@@ -55,10 +54,6 @@ const PDFViewerContent = ({ file, documentId, onMarkdownUpdate }) => {
   
   const [layoutVersion, setLayoutVersion] = useState(0)
   const [outline, setOutline] = useState([])
-  const [translationDialog, setTranslationDialog] = useState({
-    isOpen: false,
-    selectedText: ''
-  })
   const [actionResponseDialog, setActionResponseDialog] = useState({
     isOpen: false,
     type: 'chat',
@@ -107,7 +102,6 @@ const PDFViewerContent = ({ file, documentId, onMarkdownUpdate }) => {
   const {
     contextMenu,
     handleCopyText,
-    handleTranslateText: originalHandleTranslateText,
     setContextMenu,
     triggerActionInputDialog,
     resetMagicWandTrigger
@@ -197,17 +191,6 @@ const PDFViewerContent = ({ file, documentId, onMarkdownUpdate }) => {
   }, [actionResponseDialog.isOpen])
 
   
-  // Override the translate handler to open our dialog
-  const handleTranslateText = () => {
-    if (contextMenu.show && contextMenu.selectedText) {
-      setTranslationDialog({
-        isOpen: true,
-        selectedText: contextMenu.selectedText
-      })
-      // Close context menu after action
-      setContextMenu({ show: false, x: 0, y: 0, selectedText: '' })
-    }
-  }
 
   const computeResponseFrame = useCallback((anchor) => {
     const width = 340
@@ -309,12 +292,6 @@ const PDFViewerContent = ({ file, documentId, onMarkdownUpdate }) => {
     }
   }
 
-  const handleCloseTranslationDialog = () => {
-    setTranslationDialog({
-      isOpen: false,
-      selectedText: ''
-    })
-  }
 
   const handleTranslate = async (text, targetLang) => {
     return await translateText(text, targetLang)
@@ -659,7 +636,6 @@ const PDFViewerContent = ({ file, documentId, onMarkdownUpdate }) => {
     // Reset states when document changes
     setOutline([])
     setHighlightPopover({ show: false, id: null, left: 0, top: 0 })
-    setTranslationDialog({ isOpen: false, selectedText: '' })
     setOverviewDialog({ isOpen: false })
     
     // Reset PDF viewer state
@@ -1079,13 +1055,6 @@ const PDFViewerContent = ({ file, documentId, onMarkdownUpdate }) => {
       {/* PDF Outline Drawer */}
       <PdfOutlineDrawer outline={outline} />
 
-      {/* Translation Dialog */}
-      <TranslationDialog
-        isOpen={translationDialog.isOpen}
-        selectedText={translationDialog.selectedText}
-        onClose={handleCloseTranslationDialog}
-        onTranslate={handleTranslate}
-      />
 
       {/* Overview Dialog */}
       <OverviewDialog
