@@ -172,7 +172,7 @@ async def cors_debug():
 
 
 # Routers
-from app.routes import translate, images, search, tags, highlights  # noqa: E402
+from app.routes import translate, search, tags, highlights  # noqa: E402
 from app.routes import workspaces  # noqa: E402
 from app.routes import simulate  # noqa: E402
 from app.routes import rag  # noqa: E402
@@ -185,7 +185,6 @@ app.include_router(workspaces.router, prefix="/api/v1", dependencies=[Depends(ap
 app.include_router(simulate.router, prefix="/api/v1", dependencies=[Depends(api_key_guard)])
 
 app.include_router(translate.router, prefix="/api/v1", dependencies=[Depends(api_key_guard)])
-app.include_router(images.router, prefix="/api/v1", dependencies=[Depends(api_key_guard)])
 app.include_router(search.router, prefix="/api/v1", dependencies=[Depends(api_key_guard)])
 app.include_router(tags.router, prefix="/api/v1", dependencies=[Depends(api_key_guard)])
 app.include_router(highlights.router, prefix="/api/v1", dependencies=[Depends(api_key_guard)])
