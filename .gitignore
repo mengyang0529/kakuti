@@ -6,7 +6,7 @@ yarn-error.log*
 pnpm-debug.log*
 
 # Production builds
-/dist
+# /dist
 /build
 # /web/dist
 /web/build
