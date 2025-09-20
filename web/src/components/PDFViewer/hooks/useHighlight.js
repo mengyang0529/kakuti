@@ -577,6 +577,15 @@ const useHighlight = (viewerRef, toolMode, setToolMode, documentId) => {
     // reset selection state only
   }, [isHighlightMode, isSelecting, applyHighlight])
 
+  // Clear Magic Wand highlights
+  const clearMagicWandHighlights = useCallback(() => {
+    setHighlights(prev => {
+      const filtered = prev.filter(h => !h.isTemporary)
+      console.log('clearMagicWandHighlights: removed temp highlights, count:', filtered.length)
+      return filtered
+    })
+  }, [])
+
   // Handle Magic Wand selection - create highlight from Magic Wand results
   const handleMagicWandSelection = useCallback(async (selectedText, pageIndex, rectsNorm) => {
     console.log('handleMagicWandSelection called with:', { selectedText, pageIndex, rectsNorm })
@@ -621,21 +630,12 @@ const useHighlight = (viewerRef, toolMode, setToolMode, documentId) => {
       
       console.log('handleMagicWandSelection: creating temp highlight:', tempHighlight)
       
-      // Add to highlights temporarily
+      // Add to highlights (persistent like useTextSelection)
       setHighlights(prev => {
         const newHighlights = [...prev, tempHighlight]
         console.log('handleMagicWandSelection: highlights updated, count:', newHighlights.length)
         return newHighlights
       })
-      
-      // Remove temporary highlight after a delay
-      setTimeout(() => {
-        setHighlights(prev => {
-          const filtered = prev.filter(h => h.id !== tempHighlight.id)
-          console.log('handleMagicWandSelection: temp highlight removed, count:', filtered.length)
-          return filtered
-        })
-      }, 3000) // Show for 3 seconds
       
     } catch (error) {
       console.error('Error handling Magic Wand selection:', error)
@@ -760,7 +760,8 @@ const useHighlight = (viewerRef, toolMode, setToolMode, documentId) => {
     handleMouseDown,
     handleMouseUp,
     handleMouseMove,
-    handleMagicWandSelection
+    handleMagicWandSelection,
+    clearMagicWandHighlights
   }
 }
 

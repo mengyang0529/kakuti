@@ -79,6 +79,31 @@ const PDFViewerContent = ({ file, documentId, onMarkdownUpdate }) => {
   
 
   // Custom hooks - must be called before useEffects that depend on them
+  // First call useHighlight to get clearMagicWandHighlights
+  const {
+    highlights,
+    applyHighlight,
+    removeHighlight,
+    updateHighlightComment,
+    updateHighlightColor,
+    getHighlightOverlays,
+    handleMouseDown,
+    handleMouseUp,
+    handleMouseMove,
+    isLoading,
+    handleMagicWandSelection,
+    clearMagicWandHighlights
+  } = useHighlight(
+    viewerRef,
+    toolMode,
+    (next) => {
+      const value = typeof next === 'function' ? next(toolMode) : next
+      dispatch({ type: PDF_ACTIONS.SET_TOOL_MODE, payload: value })
+    },
+    documentId
+  )
+
+  // Then call useTextSelection with clearMagicWandHighlights
   const {
     contextMenu,
     handleCopyText,
@@ -86,7 +111,7 @@ const PDFViewerContent = ({ file, documentId, onMarkdownUpdate }) => {
     setContextMenu,
     triggerActionInputDialog,
     resetMagicWandTrigger
-  } = useTextSelection(viewerRef)
+  } = useTextSelection(viewerRef, clearMagicWandHighlights)
 
   useEffect(() => {
     if (contextMenu.show) {
@@ -451,28 +476,6 @@ const PDFViewerContent = ({ file, documentId, onMarkdownUpdate }) => {
     exitScreenshotMode
   } = useScreenshot(viewerRef, handleScreenshotComplete)
   
-  const {
-    highlights,
-    applyHighlight,
-    removeHighlight,
-    updateHighlightComment,
-    updateHighlightColor,
-    getHighlightOverlays,
-    handleMouseDown,
-    handleMouseUp,
-    handleMouseMove,
-    isLoading,
-    handleMagicWandSelection
-  } = useHighlight(
-    viewerRef,
-    toolMode,
-    (next) => {
-      const value = typeof next === 'function' ? next(toolMode) : next
-      dispatch({ type: PDF_ACTIONS.SET_TOOL_MODE, payload: value })
-    },
-    documentId
-  )
-
   // Handle magic wand selection callback
   const handleWandSelect = useCallback(({ pageIndex, minX, maxX, pathBounds, anchor, pageRect }) => {
     console.log('handleWandSelect called with:', { pageIndex, minX, maxX, pathBounds, anchor, pageRect })

@@ -1,6 +1,6 @@
 import { useState, useEffect, useRef } from 'react'
 
-const useTextSelection = (viewerRef) => {
+const useTextSelection = (viewerRef, clearMagicWandHighlights) => {
   const [selectedText, setSelectedText] = useState('')
   const [contextMenu, setContextMenu] = useState({ show: false, x: 0, y: 0, selectedText: '', rects: [] })
   const [isMagicWandTriggered, setIsMagicWandTriggered] = useState(false)
@@ -110,6 +110,11 @@ const useTextSelection = (viewerRef) => {
       }
       setContextMenu({ show: false, x: 0, y: 0, selectedText: '', rects: [] })
       setSelectedText('')
+      
+      // Clear Magic Wand highlights when clicking elsewhere
+      if (clearMagicWandHighlights) {
+        clearMagicWandHighlights()
+      }
     }
 
     document.addEventListener('mouseup', handleMouseUp)
