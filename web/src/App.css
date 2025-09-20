@@ -1,0 +1,610 @@
+/* App.css - Main application styles with green theme */
+* {
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+}
+
+body {
+  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Roboto', sans-serif;
+  background-color: #ffffff;
+  color: #1f2937;
+  line-height: 1.6;
+}
+
+.app {
+  min-height: 100vh;
+  height: 100vh; /* ensure children using 100% can resolve */
+  display: flex;
+  flex-direction: column;
+}
+
+.app-header {
+  background: #ffffff;
+  color: #111827;
+  padding: 0.6rem 1rem;
+  border-bottom: 1px solid #e5e7eb;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 1rem;
+}
+
+
+.app-header h1 {
+  font-size: 1.4rem;
+  font-weight: 700;
+  margin: 0;
+  cursor: pointer;
+  color: #059669; /* brand in green */
+  display: flex;
+  align-items: center;
+  height: 50px;
+}
+
+.app-header h1 svg {
+  height: 100%;
+  width: auto;
+}
+
+.header-center {
+  flex: 1 1 auto;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.ws-name-display {
+  font-size: 1.05rem;
+  font-weight: 600;
+  color: #111827; /* black */
+  padding: 4px 8px;
+  border-radius: 6px;
+}
+
+.ws-name-input {
+  font-size: 1.05rem;
+  font-weight: 600;
+  color: #111827;
+  border: 1px solid #d1d5db;
+  border-radius: 6px;
+  padding: 4px 8px;
+  outline: none;
+  min-width: 200px;
+}
+
+.slogan {
+  font-size: 1.05rem;
+  font-weight: 600;
+  color: #111827;
+}
+
+/* workspace crumb styles removed (title now swaps to workspace name) */
+
+.header-controls {
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+}
+
+/* Top action buttons */
+.top-actions {
+  display: flex;
+  align-items: center;
+  gap: 0.6rem;
+}
+
+.top-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  padding: 8px 12px;
+  border-radius: 12px;
+  border: 1px solid rgba(0,0,0,0.05);
+  background: rgba(255,255,255,0.6);
+  backdrop-filter: blur(6px);
+  color: #1f2937;
+  cursor: pointer;
+  transition: transform 0.15s ease, box-shadow 0.15s ease, background 0.15s ease;
+}
+
+.top-btn:hover {
+  transform: translateY(-1px);
+  box-shadow: 0 4px 14px rgba(0,0,0,0.08);
+}
+
+.top-icon { display: inline-flex; }
+.top-text { font-weight: 600; font-size: 0.9rem; }
+
+.btn-audio { background: #eef2ff; color: #1e3a8a; }
+.btn-video { background: #e7f5ec; color: #064e3b; }
+.btn-mind  { background: #f3eaf4; color: #7c2d89; }
+.btn-reports { background: #f4f3ea; color: #5b4a1f; }
+
+@media (max-width: 1024px) {
+  .top-text { display: none; }
+  .top-btn { padding: 8px; }
+}
+
+.app-main {
+  flex: 1;
+  padding: 2px;
+  background-color: #ffffff;
+  min-height: 0; /* enable child scrolling */
+  overflow: hidden; /* page doesn't scroll */
+}
+
+/* Workspace view: remove outer padding so content and editor reach bottom cleanly */
+.app-main.workspace {
+  padding: 0;
+}
+
+/* Resizable container for the two panels */
+.resizable-container {
+  display: flex;
+  height: 100%;
+  align-items: stretch;
+  overflow: hidden;
+}
+
+.welcome-screen {
+  display: block;            /* allow normal flow */
+  width: 100%;
+  height: 100%;
+}
+
+.welcome-content {
+  width: 100%;
+}
+
+.welcome-content h2 {
+  color: #059669;
+  font-size: 1.8rem;
+  margin-bottom: 1rem;
+  font-weight: 600;
+}
+
+.welcome-content p {
+  color: #6b7280;
+  font-size: 1.1rem;
+  margin-bottom: 2rem;
+}
+
+/* Rounded rectangle control to jump back into Workspace */
+.workspace-pill {
+  display: inline-flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  width: 240px;
+  height: 150px;
+  padding: 16px;
+  border-radius: 12px;
+  background: #ffffff;
+  border: 1px solid #e2e8f0;
+  color: #065f46;
+  font-weight: 700;
+  font-size: 1rem;
+  letter-spacing: 0.2px;
+  cursor: pointer;
+  box-shadow: 0 4px 10px rgba(0,0,0,0.06);
+  transition: transform 0.2s ease, box-shadow 0.2s ease, border-color 0.2s ease;
+  margin-bottom: 16px;
+}
+
+.workspace-pill:hover {
+  transform: translateY(-4px);
+  box-shadow: 0 10px 20px rgba(0,0,0,0.10);
+  border-color: #cbd5e1;
+}
+
+.workspace-pill:focus {
+  outline: none;
+  box-shadow: 0 0 0 3px rgba(16, 185, 129, 0.35), 0 8px 20px rgba(0,0,0,0.12);
+}
+
+.workspace-title {
+  font-size: 1.05rem;
+  font-weight: 700;
+  color: #065f46;
+}
+
+/* removed editable title input styles */
+
+.workspace-meta {
+  margin-top: 8px;
+  font-size: 0.85rem;
+  font-weight: 600;
+  color: #475569;
+}
+
+.feature-list {
+  display: grid;
+  gap: 1rem;
+  text-align: left;
+}
+
+.feature-item {
+  padding: 0.75rem;
+  background: #f0fdf4;
+  border: 1px solid #bbf7d0;
+  border-radius: 8px;
+  color: #059669;
+  font-weight: 500;
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+.pane {
+  min-height: 0;
+  overflow: visible; /* allow child scrollbars to be visible */
+  display: flex;
+  flex-direction: column; /* ensure child fills width */
+  padding: 0;
+  margin: 0;
+  /* width is controlled by container or inline styles; height handled by flex */
+}
+
+/* Grid for PDF preview cards inside Workspace */
+.preview-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(180px, 1fr));
+  gap: 12px;
+  padding: 12px;
+  align-content: start;
+  overflow: auto;
+}
+
+/* Two-column workspace preview: notes on the left, PDFs on the right */
+.preview-columns {
+  display: grid;
+  grid-template-columns: 220px 1fr; /* left column fixed to card width */
+  gap: 12px;
+  padding: 12px;
+  align-items: start;
+}
+
+.notes-column {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.pdfs-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, 220px); /* fixed card width */
+  gap: 12px;
+  align-content: start;
+  justify-content: start; /* left-align tracks so grid starts at container edge */
+}
+
+/* Shared label style for creation cards (green, bold) */
+.create-workspace-label {
+  font-weight: 500; /* thinner than bold */
+  color: #000; /* black label */
+  text-align: center;
+}
+
+/* PDF overlay for floating display */
+.pdf-overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100vw;
+  height: 100vh;
+  z-index: 1000;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  padding: 20px;
+  box-sizing: border-box;
+}
+
+.pdf-overlay-backdrop {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background: rgba(0, 0, 0, 0.5);
+  cursor: pointer;
+}
+
+.pdf-overlay-container {
+  position: relative;
+  max-width: 1200px;
+  width: 90%;
+  height: 90%;
+  background: white;
+  border-radius: 12px;
+  box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
+  overflow: hidden;
+  z-index: 1001;
+}
+
+.pdf-overlay-container .pdf-viewer {
+  width: 100%;
+  height: 100%;
+  border-radius: 12px;
+}
+
+/* Workspace content container */
+.workspace-content {
+  position: relative;
+  width: 100%;
+  height: 100%;
+}
+
+/* Center the workspace inner content on large screens */
+.workspace-container {
+  max-width: 1280px;
+  margin: 0 auto;
+}
+
+/* Create note card reuses .doc-preview-card sizing; keep only subtle hover */
+.create-note-card:hover { transform: translateY(-2px); }
+
+.create-note-plus {
+  color: #059669;
+  font-size: 40px;
+  font-weight: 800;
+  line-height: 1;
+}
+
+/* label now uses .doc-preview-meta */
+
+/* RAG Loading Styles */
+.rag-loading-overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: rgba(0, 0, 0, 0.3);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 40000;
+}
+
+.rag-loading-modal {
+  background: white;
+  border-radius: 12px;
+  padding: 32px;
+  box-shadow: 0 10px 25px rgba(0, 0, 0, 0.15);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 16px;
+  min-width: 280px;
+}
+
+.rag-loading-spinner {
+  width: 32px;
+  height: 32px;
+  border: 3px solid #f3f4f6;
+  border-top: 3px solid #3b82f6;
+  border-radius: 50%;
+  animation: spin 1s linear infinite;
+}
+
+@keyframes spin {
+  0% { transform: rotate(0deg); }
+  100% { transform: rotate(360deg); }
+}
+
+.rag-loading-text {
+  color: #374151;
+  font-size: 14px;
+  text-align: center;
+  max-width: 240px;
+}
+
+/* Responsive design */
+@media (max-width: 768px) {
+  .app-header {
+    padding: 1rem;
+    flex-direction: column;
+    text-align: center;
+  }
+  
+  .app-main {
+    padding: 1rem;
+  }
+  
+  .welcome-content {
+    padding: 2rem;
+    margin: 1rem;
+  }
+  
+  .welcome-content h2 {
+    font-size: 1.5rem;
+  }
+  
+  /* On mobile, stack panels vertically */
+  .resizable-container {
+    flex-direction: column;
+  }
+  
+  .pane {
+    width: 100% !important;
+    min-height: 300px;
+  }
+  
+  .rag-loading-modal {
+    margin: 20px;
+    min-width: unset;
+    padding: 24px;
+  }
+}
+.workspace-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(240px, 1fr));
+  gap: 16px;
+  padding: 0; /* start near left edge; first card adjusted via margin */
+  padding-top: 12px; /* nudge cards down a bit from the top */
+  align-content: start;
+}
+
+/* Ensure workspace pane stretches to full height and child can fill */
+.workspace-container {
+  display: flex;
+  align-items: stretch;
+  height: 100%;
+  flex-direction: column; /* stack content above bottom input bar */
+  position: relative; /* anchor pdf overlay to workspace only */
+}
+
+.workspace-container > .pane {
+  flex: 1 1 auto;
+  min-height: 0;
+}
+
+
+
+/* Ensure Markdown editor stretches fully within workspace */
+.workspace-container .md-editor {
+  flex: 1 1 auto;
+  height: 100%;
+  min-height: 0;
+}
+
+.workspace-container .md-content {
+  flex: 1 1 auto;
+  min-height: 0;
+}
+
+.workspace-card {
+  display: inline-flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  width: 240px;
+  height: 150px;
+  padding: 16px;
+  border-radius: 12px;
+  background: #ffffff;
+  border: 1px solid #e2e8f0;
+  color: #065f46;
+  font-weight: 700;
+  font-size: 1rem;
+  letter-spacing: 0.2px;
+  cursor: pointer;
+  box-shadow: 0 4px 10px rgba(0,0,0,0.06);
+  transition: transform 0.2s ease, box-shadow 0.2s ease, border-color 0.2s ease;
+  position: relative;
+}
+
+/* Nudge the Create Workspace card slightly to the right */
+.create-workspace-card {
+  margin-left: 12px;
+}
+
+.workspace-card:hover {
+  transform: translateY(-4px);
+  box-shadow: 0 10px 20px rgba(0,0,0,0.10);
+  border-color: #cbd5e1;
+}
+
+.workspace-card .workspace-title {
+  font-size: 1.05rem;
+  font-weight: 500; /* thinner than bold */
+  color: #000; /* black title */
+}
+
+.workspace-card .workspace-meta {
+  margin-top: 8px;
+  font-size: 0.85rem;
+  font-weight: 600;
+  color: #475569;
+}
+
+/* Workspace card kebab (three-dots) button */
+.ws-menu-btn {
+  position: absolute;
+  top: 8px;
+  right: 8px;
+  width: 28px;
+  height: 28px;
+  border: none;
+  background: transparent;
+  border-radius: 6px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  color: #000; /* dots are black */
+  padding: 4px; /* make clickable and ensure visibility */
+}
+
+.ws-menu-btn svg { width: 18px; height: 18px; fill: #000; }
+
+
+/* If the entire card is an <a> or <button>, prevent it from covering the corner */
+/* keep hover feedback */
+
+.ws-menu-btn:hover {
+  background: #f1f5f9;
+}
+
+.ws-menu-popup {
+  position: absolute;
+  top: 40px;
+  right: 8px;
+  background: #ffffff;
+  border: 1px solid #e2e8f0;
+  border-radius: 8px;
+  box-shadow: 0 12px 24px rgba(0,0,0,0.12);
+  z-index: 50;
+  min-width: 160px;
+  padding: 6px 0;
+}
+
+.ws-menu-item {
+  width: 100%;
+  text-align: left;
+  background: transparent;
+  border: none;
+  padding: 8px 12px;
+  cursor: pointer;
+  font-weight: 600;
+  color: #334155;
+}
+
+.ws-menu-item:hover {
+  background: #f8fafc;
+}
+
+/* Note card kebab menu (reuse styles close to workspace menu) */
+.note-menu-btn {
+  position: absolute;
+  top: 6px;
+  right: 6px;
+  width: 28px;
+  height: 28px;
+  border: none;
+  background: transparent;
+  border-radius: 6px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  color: #000;
+  padding: 4px;
+}
+
+.note-menu-popup {
+  position: absolute;
+  top: 36px;
+  right: 6px;
+  background: #ffffff;
+  border: 1px solid #e2e8f0;
+  border-radius: 8px;
+  box-shadow: 0 12px 24px rgba(0,0,0,0.12);
+  z-index: 50;
+  min-width: 140px;
+  padding: 6px 0;
+}
+
+/* (debug rules removed) */
