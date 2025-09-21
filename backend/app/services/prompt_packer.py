@@ -202,20 +202,24 @@ class PromptPacker:
                     for i, ctx in enumerate(selected_contexts)
                 ])
                 
-                prompt = f"""Based on the following context, please answer the user's question. If the question is in Chinese, answer in Chinese. If the question is in English, answer in English. Provide a concise and accurate response, and cite relevant sources using the reference numbers.
+                prompt = f"""Based on the following context, please answer the user's question. 
+
+IMPORTANT: You MUST respond in the SAME LANGUAGE as the user's question. If the question is in Chinese, answer in Chinese. If the question is in English, answer in English. If the question is in Japanese, answer in Japanese, etc. ALWAYS maintain language consistency.
 
 Context:
 {context_section}
 
 Question: {query}
 
-Answer (be concise and cite sources):"""
+Answer (be concise, cite sources, and use the same language as the question):"""
             else:
-                prompt = f"""No relevant context found for the question. Please provide a general response based on your knowledge. If the question is in Chinese, answer in Chinese. If the question is in English, answer in English.
+                prompt = f"""No relevant context found for the question. Please provide a general response based on your knowledge. 
+
+IMPORTANT: You MUST respond in the SAME LANGUAGE as the user's question. If the question is in Chinese, answer in Chinese. If the question is in English, answer in English. If the question is in Japanese, answer in Japanese, etc. ALWAYS maintain language consistency.
 
 Question: {query}
 
-Answer:"""
+Answer (use the same language as the question):"""
             
             # Calculate final token estimate
             total_tokens = self._estimate_tokens(prompt)

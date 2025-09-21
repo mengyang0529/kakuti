@@ -1,3 +1,3 @@
-REQUIRE_API_KEY: "true"
+REQUIRE_API_KEY: "false"
 GEMINI_REQUEST_TIMEOUT: "30"
 ALLOWED_ORIGINS: "http://localhost:5173,https://mengyang0529.github.io, https://kakuti.xyz"

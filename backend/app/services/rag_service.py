@@ -12,6 +12,7 @@ from ..services.chunk_service import ChunkService
 from ..services.rag_embedding_service import rag_embedding_service
 from ..services.mmr_service import mmr_service
 from ..services.prompt_packer import prompt_packer
+from ..services.gemini_direct_service import gemini_direct_service
 from .. import db
 
 
@@ -414,12 +415,8 @@ class RAGService:
             )
             
             if not candidates:
-                return {
-                    'answer': 'No relevant information found in the document.',
-                    'citations': [],
-                    'latency_ms': int((time.time() - start_time) * 1000),
-                    'fallback': True
-                }
+                logger.info(f"No candidates found for query, trying Gemini direct query for document {document_id}")
+                return gemini_direct_service.query_with_full_document(query, document_id)
             
             # Filter candidates by similarity threshold
             filtered_candidates = [
@@ -433,14 +430,8 @@ class RAGService:
             )
             
             if not filtered_candidates:
-                return {
-                    'answer': f'No sufficiently relevant information found in the document. '
-                             f'The highest similarity score was {max(c.get("score", 0.0) for c in candidates):.2f}, '
-                             f'but the minimum threshold is {self.similarity_threshold:.2f}.',
-                    'citations': [],
-                    'latency_ms': int((time.time() - start_time) * 1000),
-                    'fallback': True
-                }
+                logger.info(f"No candidates above threshold {self.similarity_threshold}, trying Gemini direct query for document {document_id}")
+                return gemini_direct_service.query_with_full_document(query, document_id)
             
             # Apply MMR for diversity on filtered candidates
             selected_indices = mmr_service.mmr(filtered_candidates, self.top_k, self.mmr_lambda)

@@ -28,6 +28,7 @@ export default function BottomInputBar({
   const [isSending, setIsSending] = useState(false);
   const [shouldUpdateHTML, setShouldUpdateHTML] = useState(false);
   const [isComposing, setIsComposing] = useState(false); // IME composition state
+  const [lastCompositionText, setLastCompositionText] = useState(''); // Track composition text
   const textareaRef = useRef(null);
 
   // Parse the nearest @token to the left of cursor
@@ -47,8 +48,8 @@ export default function BottomInputBar({
     const textContent = el.textContent || '';
     const left = textContent.slice(0, caretPos);
     
-    // Find the nearest @ after whitespace/line start
-    const m = left.match(/(^|\s)@([^\s@]*)$/);
+    // Find the nearest @ or ＠ after whitespace/line start
+    const m = left.match(/(^|\s)[@＠]([^\s@＠]*)$/);
     if (!m) return { hasTrigger: false };
     return { 
       hasTrigger: true, 
@@ -57,7 +58,7 @@ export default function BottomInputBar({
       q: m[2] ?? '', 
       start: caretPos - (m[2]?.length ?? 0) - 1 
     };
-  }, [value]);
+  }, [value, isComposing]);
 
   useEffect(() => {
     if (mentionState.hasTrigger) {
@@ -165,6 +166,15 @@ export default function BottomInputBar({
   };
 
   const onKeyDown = (e) => {
+    console.log('onKeyDown:', { key: e.key, isComposing, showPicker, value: value.trim() });
+    
+    // Always prevent Enter during IME composition
+    if (e.key === 'Enter' && isComposing) {
+      console.log('Preventing Enter during IME composition');
+      e.preventDefault();
+      return;
+    }
+
     if (showPicker && filtered.length > 0) {
       if (e.key === 'ArrowDown') {
         e.preventDefault();
@@ -188,7 +198,37 @@ export default function BottomInputBar({
       }
     }
 
+    // Check if we're in the middle of typing @mention
     if (e.key === 'Enter' && !e.shiftKey && !showPicker && !isComposing) {
+      // Check if the current text ends with @ (might be starting a mention)
+      const currentText = value.trim();
+      // Check for both half-width @ and full-width ＠
+      const endsWithAt = currentText.endsWith('@') || currentText.endsWith('＠');
+      const containsAt = currentText.includes('@') || currentText.includes('＠');
+      
+      console.log('Checking for @ mention:', { 
+        currentText, 
+        endsWithAt, 
+        containsAt,
+        endsWithHalfWidth: currentText.endsWith('@'),
+        endsWithFullWidth: currentText.endsWith('＠')
+      });
+      
+      if (endsWithAt) {
+        console.log('Preventing send because text ends with @ or ＠');
+        e.preventDefault();
+        // Don't send, just let the user continue typing
+        return;
+      }
+      
+      // Additional check: if the text is very short and contains @, don't send
+      if (currentText.length <= 3 && containsAt) {
+        console.log('Preventing send because text is short and contains @ or ＠');
+        e.preventDefault();
+        return;
+      }
+      
+      console.log('Sending message');
       e.preventDefault();
       handleSend();
     }
@@ -304,10 +344,30 @@ export default function BottomInputBar({
           }}
           onKeyDown={onKeyDown}
           onCompositionStart={() => {
+            console.log('Composition start');
             setIsComposing(true)
+            setLastCompositionText('')
+          }}
+          onCompositionUpdate={(e) => {
+            console.log('Composition update:', e.data);
+            setLastCompositionText(e.data || '')
           }}
           onCompositionEnd={() => {
+            console.log('Composition end, final text:', lastCompositionText);
             setIsComposing(false)
+            // Check if the composition ended with @ or ＠
+            if (lastCompositionText.includes('@') || lastCompositionText.includes('＠')) {
+              console.log('Composition ended with @ or ＠, should show picker');
+              // Force a re-evaluation of mention state
+              setTimeout(() => {
+                const el = textareaRef.current;
+                if (el) {
+                  const event = new Event('input', { bubbles: true });
+                  el.dispatchEvent(event);
+                }
+              }, 10);
+            }
+            setLastCompositionText('')
           }}
           style={{
             minHeight: '40px',

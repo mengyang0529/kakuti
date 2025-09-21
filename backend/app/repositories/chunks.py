@@ -59,6 +59,20 @@ class ChunksRepository:
             logger.error(f"Error counting chunks for document {document_id}: {e}")
             return 0
     
+    def get_all_chunks(self, document_id: str) -> List[Dict[str, Any]]:
+        """Get all chunks for a document, ordered by chunk_index."""
+        try:
+            if settings.DB_TYPE == "postgresql":
+                sql = "SELECT chunk_index, content, page_start, page_end FROM document_chunks WHERE document_id = %s ORDER BY chunk_index"
+            else:
+                sql = "SELECT chunk_index, content, page_start, page_end FROM document_chunks WHERE document_id = ? ORDER BY chunk_index"
+            
+            results = db.db_query_all(sql, [document_id])
+            return results or []
+        except Exception as e:
+            logger.error(f"Error getting all chunks for document {document_id}: {e}")
+            return []
+    
     def bulk_upsert(self, document_id: str, items: List[Dict[str, Any]]) -> int:
         """Bulk upsert chunks for a document. Returns number of upserted chunks.
         

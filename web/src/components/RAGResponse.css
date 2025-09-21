@@ -205,6 +205,16 @@
   font-size: 12px;
 }
 
+.method-indicator {
+  color: #059669 !important; /* Green for successful direct query */
+  font-weight: 500;
+}
+
+.fallback-indicator {
+  color: #dc2626 !important; /* Red for fallback */
+  font-weight: 500;
+}
+
 /* Mobile responsiveness */
 @media (max-width: 768px) {
   .rag-response-overlay {

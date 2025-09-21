@@ -58,7 +58,7 @@ export default function RAGResponse({ response, onClose }) {
 
   if (!response) return null
 
-  const { answer, citations = [], query, processing_time } = response
+  const { answer, citations = [], query, processing_time, method, fallback } = response
 
   return (
     <div className="rag-response-overlay">
@@ -142,11 +142,21 @@ export default function RAGResponse({ response, onClose }) {
             </div>
           </div>
           
-          {processing_time && (
-            <div className="rag-meta">
+          <div className="rag-meta">
+            {processing_time && (
               <small>Processed in {Math.round(processing_time * 1000)}ms</small>
-            </div>
-          )}
+            )}
+            {method === 'gemini_direct' && (
+              <small className="method-indicator">
+                • Answered using full document analysis
+              </small>
+            )}
+            {fallback && method !== 'gemini_direct' && (
+              <small className="fallback-indicator">
+                • Fallback response
+              </small>
+            )}
+          </div>
         </div>
       </div>
     </div>
