@@ -7,7 +7,6 @@ import re
 from dataclasses import dataclass
 from typing import Optional
 
-from google.cloud import storage
 from loguru import logger
 
 from ..config import settings
@@ -24,6 +23,8 @@ class SignedUpload:
 
 class StorageService:
     def __init__(self) -> None:
+        if not GCS_AVAILABLE:
+            raise RuntimeError("Google Cloud Storage is not available. Install google-cloud-storage package.")
         if not settings.GCS_BUCKET:
             raise RuntimeError("GCS_BUCKET is not configured")
         self.bucket_name = settings.GCS_BUCKET
@@ -80,5 +81,7 @@ storage_service: Optional[StorageService] = None
 def get_storage_service() -> StorageService:
     global storage_service
     if storage_service is None:
+        if not GCS_AVAILABLE:
+            raise RuntimeError("Google Cloud Storage is not available. Install google-cloud-storage package.")
         storage_service = StorageService()
     return storage_service
