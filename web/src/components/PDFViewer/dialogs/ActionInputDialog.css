@@ -1,5 +1,5 @@
 .action-input-dialog {
-  width: 400px; /* make dialog a bit wider so input is longer */
+  width: 500px; /* make dialog a bit wider so input is longer */
   background: #fff;
   border: 1px solid #e5e7eb;
   border-radius: 12px;
@@ -20,7 +20,7 @@
 .aid-container {
   position: fixed;
   z-index: 1000;
-  width: 400px;
+  width: 500px;
   max-width: 90vw;
   background: white;
   border-radius: 8px;

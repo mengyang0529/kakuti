@@ -542,8 +542,49 @@ const PDFViewerContent = ({ file, documentId, onMarkdownUpdate }) => {
       // 创建Magic Wand高亮
       handleMagicWandSelection(selection.selectedText, pageIndex, selection.rectsNorm)
       
-      // 触发ActionInputDialog
-      triggerActionInputDialog(selection.selectedText, anchor, selection.rectsNorm)
+      // 计算对话框位置，使用与鼠标左键选中相同的逻辑
+      const pageRect = pageElement.getBoundingClientRect()
+      const viewportWidth = window.innerWidth
+      const viewportHeight = window.innerHeight
+      const menuWidth = 500 // Updated dialog width
+      const menuHeight = 72 // Approximate dialog height
+      
+      // Convert rectsNorm to viewport coordinates
+      const viewportRects = selection.rectsNorm.map(rect => ({
+        left: pageRect.left + rect.x * pageRect.width,
+        top: pageRect.top + rect.y * pageRect.height,
+        width: rect.w * pageRect.width,
+        height: rect.h * pageRect.height,
+        right: pageRect.left + rect.x * pageRect.width + rect.w * pageRect.width,
+        bottom: pageRect.top + rect.y * pageRect.height + rect.h * pageRect.height
+      }))
+      
+      // Find the bottom-most line and leftmost rect (same logic as useTextSelection)
+      let baseRect = viewportRects[0]
+      if (viewportRects.length > 0) {
+        const maxBottom = Math.max(...viewportRects.map(r => r.bottom))
+        const bottomRects = viewportRects.filter(r => Math.abs(r.bottom - maxBottom) <= 2)
+        const leftmost = bottomRects.reduce((min, r) => (r.left < min.left ? r : min), bottomRects[0])
+        baseRect = leftmost || viewportRects[0]
+      }
+      
+      // Calculate position using the same logic as useTextSelection
+      let x = baseRect.left
+      let y = baseRect.bottom + 8
+      
+      // If overflow right, shift left to fit; if still overflow left, clamp to 8px
+      if (x + menuWidth > viewportWidth - 8) {
+        x = Math.max(8, viewportWidth - menuWidth - 8)
+      }
+      if (x < 8) x = 8
+      
+      // If bottom overflows viewport, place above the top of selection
+      if (y + menuHeight > viewportHeight - 8) {
+        y = Math.max(8, (baseRect.top - menuHeight - 8))
+      }
+      
+      // 触发ActionInputDialog，使用计算出的位置
+      triggerActionInputDialog(selection.selectedText, { x, y }, viewportRects)
     } else {
       // 即使没有选中文本，也触发ActionInputDialog
       triggerActionInputDialog('', anchor, [])

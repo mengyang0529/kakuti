@@ -147,8 +147,8 @@ const useMagicWand = (viewerRef, toolMode, onWandSelect) => {
         if (onWandSelectRef.current) {
           // Convert container coordinates to viewport coordinates for dialog positioning
           const containerRect = viewerRef.current.getBoundingClientRect()
-          const viewportX = lastPoint.x - viewerRef.current.scrollLeft + containerRect.left
-          const viewportY = lastPoint.y - viewerRef.current.scrollTop + containerRect.top
+          const viewportX = minX - viewerRef.current.scrollLeft + containerRect.left
+          const viewportY = minY - viewerRef.current.scrollTop + containerRect.top
           
           const wandSelectData = {
             pageIndex: firstPoint.pageIndex || 0,
@@ -157,9 +157,9 @@ const useMagicWand = (viewerRef, toolMode, onWandSelect) => {
             pathBounds: { minX, maxX, minY, maxY },
             anchor: {
               x: viewportX, // Viewport coordinates for dialog positioning
-              y: viewportY,
-              pageX: lastPoint.pageX, // Page coordinates
-              pageY: lastPoint.pageY
+              y: viewportY, // Viewport coordinates for dialog positioning
+              pageX: minX, // Page coordinates (left boundary)
+              pageY: minY  // Page coordinates (top boundary)
             },
             pageRect: firstPoint.pageRect
           }
