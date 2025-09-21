@@ -18,6 +18,7 @@ export default function ActionInputDialog({
   const [message, setMessage] = useState(selectedText || '')
   const [isSending, setIsSending] = useState(false)
   const [showTranslateDropdown, setShowTranslateDropdown] = useState(false)
+  const [isComposing, setIsComposing] = useState(false) // IME composition state
   const inputRef = useRef(null)
   const translateDropdownRef = useRef(null)
 
@@ -105,7 +106,7 @@ export default function ActionInputDialog({
           }}
           onKeyDown={(e) => {
             // Keep single line and support Enter to send
-            if (e.key === 'Enter' && !e.shiftKey) {
+            if (e.key === 'Enter' && !e.shiftKey && !isComposing) {
               e.preventDefault()
               e.stopPropagation()
               if (!isSending && message.trim()) {
@@ -127,6 +128,12 @@ export default function ActionInputDialog({
               return
             }
             e.stopPropagation()
+          }}
+          onCompositionStart={() => {
+            setIsComposing(true)
+          }}
+          onCompositionEnd={() => {
+            setIsComposing(false)
           }}
           onPaste={(e) => {
             e.preventDefault()

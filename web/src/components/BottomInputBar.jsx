@@ -27,6 +27,7 @@ export default function BottomInputBar({
   const [activeIdx, setActiveIdx] = useState(0);
   const [isSending, setIsSending] = useState(false);
   const [shouldUpdateHTML, setShouldUpdateHTML] = useState(false);
+  const [isComposing, setIsComposing] = useState(false); // IME composition state
   const textareaRef = useRef(null);
 
   // Parse the nearest @token to the left of cursor
@@ -187,7 +188,7 @@ export default function BottomInputBar({
       }
     }
 
-    if (e.key === 'Enter' && !e.shiftKey && !showPicker) {
+    if (e.key === 'Enter' && !e.shiftKey && !showPicker && !isComposing) {
       e.preventDefault();
       handleSend();
     }
@@ -302,6 +303,12 @@ export default function BottomInputBar({
             }
           }}
           onKeyDown={onKeyDown}
+          onCompositionStart={() => {
+            setIsComposing(true)
+          }}
+          onCompositionEnd={() => {
+            setIsComposing(false)
+          }}
           style={{
             minHeight: '40px',
             maxHeight: '120px',
