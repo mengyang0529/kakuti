@@ -79,7 +79,7 @@ async def query_workspace_rag(query: str) -> RAGQueryResponse:
                     continue
                 
                 # Query this document
-                result = rag_service.answer(query, doc['id'])
+                result = await rag_service.answer(query, doc['id'])
                 
                 if result and not result.get('fallback', True):
                     # Add document title to citations
@@ -190,7 +190,7 @@ async def query_rag(request: RAGQueryRequest):
             )
         
         # Perform RAG query
-        result = rag_service.answer(request.query, request.document_id)
+        result = await rag_service.answer(request.query, request.document_id)
         
         # Handle special statuses
         if result.get('status') == 'not_indexed':

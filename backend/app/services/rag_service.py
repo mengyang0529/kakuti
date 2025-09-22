@@ -370,7 +370,7 @@ class RAGService:
         
         return fallback
     
-    def answer(self, query: str, document_id: str) -> Dict[str, Any]:
+    async def answer(self, query: str, document_id: str) -> Dict[str, Any]:
         """Answer a query using RAG on the specified document.
         
         Args:
@@ -404,7 +404,7 @@ class RAGService:
             
             # Generate query embedding
             logger.debug(f"Generating query embedding for: {query[:100]}...")
-            query_embedding = rag_embedding_service.embed_query(query)
+            query_embedding = await rag_embedding_service.embed_query(query)
             
             # Retrieve candidate chunks
             candidates = self.chunks_repo.topk_exact(

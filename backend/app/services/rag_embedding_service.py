@@ -185,7 +185,7 @@ class RAGEmbeddingService:
             logger.error(f"Error embedding {len(texts)} texts: {e}")
             raise e
     
-    def embed_query(self, text: str) -> List[float]:
+    async def embed_query(self, text: str) -> List[float]:
         """Embed a single query text.
         
         Args:
@@ -200,9 +200,8 @@ class RAGEmbeddingService:
         try:
             # Local fallback path
             if not self._use_google and self._local_provider is not None:
-                import asyncio
-                # Handle async call properly
-                vecs = asyncio.run(self._local_provider.embed_texts([text]))
+                # Handle async call properly in async context
+                vecs = await self._local_provider.embed_texts([text])
                 vec = vecs[0]
                 vec = self._normalize_vector(np.array(vec, dtype=np.float32))
                 return vec.tolist()
