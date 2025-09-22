@@ -1,0 +1,127 @@
+# Multi-stage Dockerfile for Kakuti Frontend + Backend
+FROM node:18-alpine AS frontend-builder
+
+# Set working directory for frontend
+WORKDIR /app/web
+
+# Copy frontend package files
+COPY ../web/package*.json ./
+COPY ../web/.npmrc ./ 
+
+# Install frontend dependencies
+RUN npm ci --legacy-peer-deps
+
+# Copy frontend source code
+COPY ../web/ ./
+
+# Build frontend
+RUN npm run build
+
+# Backend stage
+FROM python:3.11-slim AS backend-builder
+
+ARG DEBIAN_FRONTEND=noninteractive
+
+# Install system dependencies
+RUN apt-get update && apt-get install -y --no-install-recommends \
+    build-essential \
+    libmagic1 \
+    libgl1 \
+    poppler-utils \
+    curl \
+    && rm -rf /var/lib/apt/lists/*
+
+# Set working directory for backend
+WORKDIR /app/backend
+
+# Copy backend requirements
+COPY ../backend/requirements.txt ./
+
+# Install Python dependencies
+RUN pip install --no-cache-dir --upgrade pip \
+    && pip install --no-cache-dir --index-url https://download.pytorch.org/whl/cpu torch==2.8.0+cpu \
+    && pip install --no-cache-dir -r requirements.txt
+
+# Copy backend source code
+COPY ../backend/ ./
+
+# Final production stage
+FROM python:3.11-slim AS production
+
+ARG DEBIAN_FRONTEND=noninteractive
+
+# Install runtime dependencies only
+RUN apt-get update && apt-get install -y --no-install-recommends \
+    libmagic1 \
+    libgl1 \
+    poppler-utils \
+    nginx \
+    supervisor \
+    && rm -rf /var/lib/apt/lists/*
+
+# Create app user
+RUN addgroup --system app && adduser --system --group app
+
+# Set working directory
+WORKDIR /app
+
+# Copy Python dependencies from builder
+COPY --from=backend-builder /usr/local/lib/python3.11/site-packages /usr/local/lib/python3.11/site-packages
+COPY --from=backend-builder /usr/local/bin /usr/local/bin
+
+# Copy backend application
+COPY --from=backend-builder /app/backend ./backend
+
+# Copy frontend build
+COPY --from=frontend-builder /app/web/dist ./web/dist
+
+# Copy configuration files
+COPY scripts/nginx.conf /etc/nginx/nginx.conf
+COPY scripts/supervisord.conf /etc/supervisor/conf.d/supervisord.conf
+
+# Create necessary directories
+RUN mkdir -p /app/backend/storage /var/log/supervisor /var/log/nginx /var/lib/nginx \
+    && chown -R app:app /app \
+    && chown -R app:app /var/log/supervisor \
+    && chown -R www-data:www-data /var/log/nginx /var/lib/nginx /etc/nginx
+
+# Environment variables
+ENV PYTHONUNBUFFERED=1 \
+    PIP_NO_CACHE_DIR=off \
+    PIP_ROOT_USER_ACTION=ignore \
+    PORT=8080 \
+    BACKEND_PORT=8001 \
+    DB_TYPE=sqlite \
+    DOCMIND_DB=/app/backend/storage/docmind.db \
+    LLM_PROVIDER=gemini \
+    REQUIRE_API_KEY=true \
+    GEMINI_REQUEST_TIMEOUT=30 \
+    RAG_TOP_K=6 \
+    RAG_MAX_CONTEXT_TOKENS=1800 \
+    RAG_BLOCK_MAX_TOKENS=800 \
+    RAG_BLOCK_TARGET_TOKENS=400 \
+    RAG_BLOCK_OVERLAP_TOKENS=80 \
+    RAG_MMR_LAMBDA=0.5 \
+    RAG_SIMILARITY_THRESHOLD=0.65 \
+    RAG_EMBEDDING_MODEL=text-embedding-004 \
+    RAG_GENERATION_MODEL=gemini-1.5-flash \
+    HF_HOME=/tmp \
+    RATE_LIMIT_PER_MINUTE=120 \
+    RATE_LIMIT_BURST=60
+
+# Expose ports
+EXPOSE 8080
+
+# Copy startup script
+COPY scripts/start-fullstack.sh /start-fullstack.sh
+RUN chmod +x /start-fullstack.sh
+
+# Switch to app user for backend, but nginx needs to run as root
+USER root
+
+# Health check
+HEALTHCHECK --interval=30s --timeout=10s --start-period=60s --retries=3 \
+    CMD curl -f http://localhost:8080/health || exit 1
+
+# Start services using supervisor
+CMD ["/start-fullstack.sh"]

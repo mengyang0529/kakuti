@@ -109,6 +109,34 @@ start_backend() {
     sleep 1
   fi
   echo "[+] Starting backend on :$port"
+  
+  # Create .env.engine if it doesn't exist
+  if [[ ! -f "$BACKEND_DIR/.env.engine" ]]; then
+    echo "[+] Creating .env.engine"
+    cat > "$BACKEND_DIR/.env.engine" << 'EOF'
+# Backend Environment Configuration
+DB_TYPE=sqlite
+DOCMIND_DB=storage/docmind.db
+LLM_PROVIDER=gemini
+REQUIRE_API_KEY=false
+GEMINI_REQUEST_TIMEOUT=30
+RAG_TOP_K=6
+RAG_MAX_CONTEXT_TOKENS=1800
+RAG_BLOCK_MAX_TOKENS=800
+RAG_BLOCK_TARGET_TOKENS=400
+RAG_BLOCK_OVERLAP_TOKENS=80
+RAG_MMR_LAMBDA=0.5
+RAG_SIMILARITY_THRESHOLD=0.65
+RAG_EMBEDDING_MODEL=text-embedding-004
+RAG_GENERATION_MODEL=gemini-1.5-flash
+ALLOWED_ORIGINS=http://localhost:5173,https://mengyang0529.github.io,https://kakuti.xyz
+HF_HOME=/tmp
+RATE_LIMIT_PER_MINUTE=120
+RATE_LIMIT_BURST=60
+EOF
+    echo "[i] Please update $BACKEND_DIR/.env.engine with your API keys"
+  fi
+  
   export ENV_FILE=".env.engine"
   (cd "$BACKEND_DIR" && nohup "$py" -m uvicorn app.main:app --port "$port" > "$LOG_BACKEND" 2>&1 & echo $! > "$PID_BACKEND")
   sleep 1
@@ -117,6 +145,17 @@ start_backend() {
 
 start_frontend() {
   echo "[+] Starting frontend (Vite dev server)"
+  
+  # Create .env.ui if it doesn't exist
+  if [[ ! -f "$WEB_DIR/.env.ui" ]]; then
+    echo "[+] Creating .env.ui"
+    cat > "$WEB_DIR/.env.ui" << 'EOF'
+# Frontend Environment Configuration
+VITE_API_BASE_URL=http://localhost:8001/api/v1
+VITE_API_KEY=test-key
+EOF
+  fi
+  
   export ENV_FILE=".env.ui"
   (cd "$WEB_DIR" && nohup npm run dev -- --host > "$LOG_WEB" 2>&1 & echo $! > "$PID_WEB")
   sleep 1

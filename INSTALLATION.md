@@ -1,10 +1,102 @@
 # Installation & Setup
 
-## Quickstart (zero-config)
+This guide provides comprehensive installation options for Kakuti, from automated scripts to manual setup. Choose the method that best fits your needs.
 
-Clone and run without editing files. The backend will read `backend/.env` if present, otherwise fall back to `backend/.env.example`. Frontend defaults to backend on port 8001.
+## 🚀 Quick Start (Recommended)
 
-1) Python 3.11 (recommended) via conda
+### Automated Setup Scripts
+
+We provide automated scripts for easy setup across different platforms and environments:
+
+#### Option 1: Conda Environment (Recommended)
+
+**Linux/macOS:**
+```bash
+# One-command setup and start
+bash scripts/dev.sh setup --env kakuti --ocr
+bash scripts/dev.sh start --env kakuti
+
+# Open http://localhost:5173
+```
+
+**Windows:**
+```powershell
+# One-command setup and start
+powershell -ExecutionPolicy Bypass -File scripts/dev.ps1 setup --env kakuti --ocr
+powershell -ExecutionPolicy Bypass -File scripts/dev.ps1 start --env kakuti
+
+# Open http://localhost:5173
+```
+
+#### Option 2: Python venv
+
+**Linux/macOS:**
+```bash
+bash scripts/dev-venv.sh setup --python python3 --venv .venv
+bash scripts/dev-venv.sh start --port 8001
+```
+
+**Windows:**
+```powershell
+powershell -File scripts/dev-venv.ps1 setup -python python -venv .venv
+powershell -File scripts/dev-venv.ps1 start -port 8001
+```
+
+#### Option 3: Docker (Fullstack)
+
+**Linux/macOS:**
+```bash
+# Quick start with Docker
+bash scripts/docker-fullstack.sh build
+export GEMINI_API_KEY="your-api-key"
+bash scripts/docker-fullstack.sh start --port 8080
+
+# Open http://localhost:8080
+```
+
+**Windows:**
+```powershell
+powershell -File scripts/docker-fullstack.ps1 build
+$env:GEMINI_API_KEY="your-api-key"
+powershell -File scripts/docker-fullstack.ps1 start -Port 8080
+
+# Open http://localhost:8080
+```
+
+### ⚡ What the Scripts Do
+
+1. **Automatic Environment Setup**: Create and configure conda/venv environments
+2. **Dependency Installation**: Install all backend and frontend dependencies
+3. **Environment File Creation**: Generate `.env.engine` and `.env.ui` with defaults
+4. **Service Management**: Start, stop, and monitor both backend and frontend
+5. **Cross-Platform Support**: Works on Linux, macOS, and Windows
+
+### 🔧 Configuration Notes
+
+- **API Keys**: Scripts will prompt you to update API keys in the generated `.env.engine` file
+- **Default Ports**: Backend `:8001`, Frontend `:5173`, Docker `:8080`
+- **Environment**: Conda env named `kakuti`, Python `3.11`
+- **Logs**: Written to repo root (`backend_uvicorn.log`, `web_vite.log`)
+
+For detailed script usage, see the main [README](README.md) files.
+
+---
+
+## 📋 Manual Installation
+
+If you prefer manual setup or need custom configuration:
+
+### Prerequisites
+
+- Python 3.11+ (3.11 recommended)
+- Node.js 18+ (20+ recommended)  
+- SQLite (system default OK)
+- Optional: PostgreSQL 14+ with `pgvector` extension
+- Optional (OCR): Tesseract OCR engine (`tesseract` binary)
+
+### Manual Quickstart
+
+1) **Python Environment**
 
 ```bash
 conda create -n kakuti python=3.11 -y
@@ -14,52 +106,91 @@ pip install -r backend/requirements.txt
 conda install -c conda-forge tesseract -y
 ```
 
-2) Run backend
+2) **Run Backend**
 
 ```bash
 cd backend
 uvicorn app.main:app --port 8001
 ```
 
-3) Frontend
+3) **Frontend**
 
 ```bash
 cd web
-npm install --legacy-peer-deps
+npm install
 npm run dev
 # Open http://localhost:5173
 ```
 
-Notes:
-- No API keys are required to boot. Gemini provider has a mock fallback for explain/translate, and RAG will fall back to local embeddings and summary-style answers when Google keys are not configured.
-- To enable full RAG generation, set `GEMINI_API_KEY` (or `GOOGLE_API_KEY`) in `backend/.env`.
+**Notes:**
+- No API keys required to boot (mock fallbacks available)
+- Set `GEMINI_API_KEY` in `backend/.env` for full functionality
+- Scripts automatically handle this setup for you
 
-### Using the helper script
+---
 
-Alternatively, use the included helper script for one-shot setup and dev run:
+---
+
+## 🔧 Advanced Configuration
+
+### Script Management Commands
+
+Once you've completed setup, you can manage your development environment:
 
 ```bash
-bash scripts/dev.sh setup --env kakuti --ocr   # create env, install deps
-bash scripts/dev.sh start --env kakuti         # start backend (:8001) and frontend (:5173)
-bash scripts/dev.sh status                     # show process status
-bash scripts/dev.sh stop                       # stop both
+# Check service status
+bash scripts/dev.sh status
+
+# Stop all services  
+bash scripts/dev.sh stop
+
+# Start individual services
+bash scripts/dev.sh backend --env kakuti
+bash scripts/dev.sh frontend
+
+# Docker management
+bash scripts/docker-fullstack.sh logs --follow
+bash scripts/docker-fullstack.sh shell
+bash scripts/docker-fullstack.sh clean
 ```
 
-This guide consolidates all dependencies and environment configuration for both backend (FastAPI) and frontend (Vite + React). It also covers optional features such as OCR, local embeddings, PostgreSQL + pgvector, and sqlite-vec.
+### Production Deployment
 
-## Prerequisites
+For production deployment to Google Cloud Run:
 
-- Python 3.11+ (3.11 recommended)
-- Node.js 18+ (20+ recommended)
-- SQLite (system default OK)
-- Optional: PostgreSQL 14+ with `pgvector` extension
-- Optional (OCR): Tesseract OCR engine installed on your system (`tesseract` binary)
+```bash
+cd backend
+export GEMINI_API_KEY="your-production-api-key"
+./deploy.sh
+```
 
-Defaults:
-- Backend: http://localhost:8001
-- Frontend: http://localhost:5173
+See the deployment scripts for full configuration options.
 
-## Dependency Summary
+---
+
+## 📚 Detailed Manual Setup
+
+For those who prefer complete control over the installation process:
+
+### System Requirements
+
+- **Python 3.11+** (3.11 recommended)
+- **Node.js 18+** (20+ recommended)  
+- **SQLite** (system default OK)
+- **Optional**: PostgreSQL 14+ with `pgvector` extension
+- **Optional (OCR)**: Tesseract OCR engine (`tesseract` binary)
+
+### Default Configuration
+
+- **Backend**: http://localhost:8001
+- **Frontend**: http://localhost:5173
+- **Docker**: http://localhost:8080 (fullstack)
+
+---
+
+## 📦 Technical Details
+
+### Dependency Summary
 
 - Backend core: FastAPI, Uvicorn, Pydantic, python-dotenv, Loguru
 - Data/processing: NumPy, PyMuPDF (`pymupdf`), Pillow, OpenCV (headless), pytesseract (requires Tesseract binary)

@@ -4,17 +4,13 @@
 
 ## 功能概览
 
-## 安装与配置
-
-请参见 [INSTALLATION](INSTALLATION.md) 获取完整安装与环境配置说明（包含后端/前端依赖、环境变量、OCR/本地向量、PostgreSQL/pgvector 与 sqlite-vec 等）。
-
 - 文档上传：可挂到指定工作区，自动提取正文以便全文检索。
 - 工作区管理：创建、重命名、删除；按工作区查看与管理文档。
 - 阅读器：平滑缩放滚动、全文搜索、截图、文本高亮与注释。
 - 翻译：对选中内容一键翻译（可配置 LLM 提供商或使用缓存）。
 - AI 查询（RAG）：就当前文档或工作区范围进行问答，附来源引用。
 - 删除与下载：可直接删除单个文档（库与文件），或下载原文件。
-- 即将上线：Magic Wand 画线 → 自动选中“画线下方同页且水平范围重叠”的文本，弹出对话框选择 查询/解释/翻译/注释。
+- 即将上线：Magic Wand 画线 → 自动选中"画线下方同页且水平范围重叠"的文本，弹出对话框选择 查询/解释/翻译/注释。
 
 ### 正在开发中的功能
 
@@ -22,42 +18,35 @@
 - 表格结构化识别与图片内容抓取
 - 随身笔记 / 个人知识库能力
 
-## 快速开发脚本（Linux/macOS 与 Windows）
+## 快速开始
 
-提供一键环境准备与本地启动方式。请先安装 `conda`（Miniconda/Anaconda）与 Node.js。
+### 🚀 自动化安装（推荐）
 
-### Linux / macOS（`scripts/dev.sh`）
+**Linux/macOS：**
+```bash
+bash scripts/dev.sh setup --env kakuti --ocr
+bash scripts/dev.sh start --env kakuti
+# 打开 http://localhost:5173
+```
 
-- 安装依赖与环境：
-  - `bash scripts/dev.sh setup --env kakuti [--ocr]`
-- 同时启动后端与前端：
-  - `bash scripts/dev.sh start --env kakuti [--port 8001]`
-- 单独启动后端或前端：
-  - `bash scripts/dev.sh backend --env kakuti [--port 8001]`
-  - `bash scripts/dev.sh frontend`
-- 查看状态 / 停止：
- - `bash scripts/dev.sh status`
-  - `bash scripts/dev.sh stop`
+**Windows：**
+```powershell
+powershell -ExecutionPolicy Bypass -File scripts/dev.ps1 setup --env kakuti --ocr
+powershell -ExecutionPolicy Bypass -File scripts/dev.ps1 start --env kakuti
+# 打开 http://localhost:5173
+```
 
-### Windows（`scripts\dev.ps1`）
+**Docker（全栈）：**
+```bash
+bash scripts/docker-fullstack.sh build
+export GEMINI_API_KEY="your-api-key"
+bash scripts/docker-fullstack.sh start --port 8080
+# 打开 http://localhost:8080
+```
 
-- 在 PowerShell 中执行（可临时开放执行策略）：
-  - `powershell -ExecutionPolicy Bypass -File scripts/dev.ps1 setup --env kakuti [--ocr]`
-- 同时启动后端与前端：
-  - `powershell -ExecutionPolicy Bypass -File scripts/dev.ps1 start --env kakuti [--port 8001]`
-- 单独启动后端或前端：
-  - `powershell -ExecutionPolicy Bypass -File scripts/dev.ps1 backend --env kakuti [--port 8001]`
-  - `powershell -ExecutionPolicy Bypass -File scripts/dev.ps1 frontend`
-- 查看状态 / 停止：
- - `powershell -ExecutionPolicy Bypass -File scripts/dev.ps1 status`
-  - `powershell -ExecutionPolicy Bypass -File scripts/dev.ps1 stop`
+### 📖 完整安装指南
 
-说明：
-- 后端环境变量放在 `backend/.env`（如 `REQUIRE_API_KEY`、`API_KEY`、`LLM_PROVIDER` 及各类 API Key）。详细见 `INSTALLATION.md` 的环境配置章节。
-- 默认：后端端口 `:8001`，前端端口 `:5173`，conda 环境名 `kakuti`，Python 版本 `3.11`。
-- 日志与 PID 写在仓库根目录：`backend_uvicorn.log`、`web_vite.log`、`backend_uvicorn.pid`、`web_vite.pid`。
-- Vite 配置默认将 `base` 设为 `/kakuti/`；如切换到自定义域名，设置环境变量 `VITE_BASE_PATH=/` 并同步更新 CNAME。
-- 前端调用接口使用 `VITE_API_BASE` 与 `VITE_API_KEY`（推荐在 GitHub Actions Secrets 中配置）。
+详细的安装选项、手动配置、高级设置和生产部署，请参见 **[INSTALLATION.md](INSTALLATION.md)**。
 
 ## 部署环境
 

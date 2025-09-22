@@ -35,46 +35,35 @@ Authentication:
 
 - All API requests require header `X-API-Key` by default (configurable via env vars).
 
-## Installation
+## Quick Start
 
-See [INSTALLATION](INSTALLATION.md) for complete setup of backend and frontend, environment variables, optional OCR/local embeddings, and PostgreSQL/pgvector.
+### 🚀 Automated Setup (Recommended)
 
-## Dev Helper Scripts (Linux/macOS & Windows)
+**Linux/macOS:**
+```bash
+bash scripts/dev.sh setup --env kakuti --ocr
+bash scripts/dev.sh start --env kakuti
+# Open http://localhost:5173
+```
 
-Quick one-shot setup and dev run. Install `conda` (Miniconda/Anaconda) and Node.js first.
+**Windows:**
+```powershell
+powershell -ExecutionPolicy Bypass -File scripts/dev.ps1 setup --env kakuti --ocr
+powershell -ExecutionPolicy Bypass -File scripts/dev.ps1 start --env kakuti
+# Open http://localhost:5173
+```
 
-### Linux / macOS (`scripts/dev.sh`)
+**Docker (Fullstack):**
+```bash
+bash scripts/docker-fullstack.sh build
+export GEMINI_API_KEY="your-api-key"
+bash scripts/docker-fullstack.sh start --port 8080
+# Open http://localhost:8080
+```
 
-- Setup environment and install deps:
-  - `bash scripts/dev.sh setup --env kakuti [--ocr]`
-- Start both backend and frontend:
-  - `bash scripts/dev.sh start --env kakuti [--port 8001]`
-- Start only backend or only frontend:
-  - `bash scripts/dev.sh backend --env kakuti [--port 8001]`
-  - `bash scripts/dev.sh frontend`
-- Check status / stop:
-  - `bash scripts/dev.sh status`
-  - `bash scripts/dev.sh stop`
+### 📖 Complete Installation Guide
 
-### Windows (`scripts\dev.ps1`)
-
-- Run from PowerShell (allow execution for the session):
-  - `powershell -ExecutionPolicy Bypass -File scripts/dev.ps1 setup --env kakuti [--ocr]`
-- Start both backend and frontend:
-  - `powershell -ExecutionPolicy Bypass -File scripts/dev.ps1 start --env kakuti [--port 8001]`
-- Start only backend / only frontend:
-  - `powershell -ExecutionPolicy Bypass -File scripts/dev.ps1 backend --env kakuti [--port 8001]`
-  - `powershell -ExecutionPolicy Bypass -File scripts/dev.ps1 frontend`
-- Check status / stop:
-  - `powershell -ExecutionPolicy Bypass -File scripts/dev.ps1 status`
-  - `powershell -ExecutionPolicy Bypass -File scripts/dev.ps1 stop`
-
-Notes:
-- Configure backend env in `backend/.env` (e.g., `REQUIRE_API_KEY`, `API_KEY`, `LLM_PROVIDER`, API keys). See the env section in `INSTALLATION.md`.
-- Defaults: backend `:8001`, frontend `:5173`, conda env name `kakuti`, Python `3.11`.
-- Logs and PIDs are written to the repo root: `backend_uvicorn.log`, `web_vite.log`, `backend_uvicorn.pid`, `web_vite.pid`.
-- The Vite config sets `base` to `/kakuti/` by default; override with `VITE_BASE_PATH=/` when deploying under a custom domain.
-- Frontend requests read `VITE_API_BASE` and `VITE_API_KEY` from build-time environment (configure them as Actions secrets for production).
+For detailed installation options, manual setup, advanced configuration, and production deployment, see **[INSTALLATION.md](INSTALLATION.md)**.
 
 ## Default Storage Paths
 

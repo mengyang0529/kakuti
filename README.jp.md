@@ -6,10 +6,6 @@
 
 ## 機能
 
-## インストール
-
-バックエンド/フロントエンドのセットアップ、環境変数、OCR/ローカル埋め込み、PostgreSQL/pgvector・sqlite-vec などの詳細は [INSTALLATION](INSTALLATION.md) を参照してください。
-
 - ドキュメントのアップロード：任意でワークスペースに紐付け。全文検索のため本文を自動抽出。
 - ワークスペース：作成・名称変更・削除。ワークスペース単位で文書を閲覧・管理。
 - ビューア：スムーズなズーム/スクロール、全文検索、スクリーンショット、テキストのハイライトと注釈。
@@ -24,42 +20,35 @@
 - 表の構造化抽出・画像キャプチャ
 - パーソナルノート / 個人ナレッジベース機能
 
-## 開発用スクリプト（Linux/macOS & Windows）
+## クイックスタート
 
-ワンショットで環境準備と開発サーバの起動ができます。事前に `conda`（Miniconda/Anaconda）と Node.js を導入してください。
+### 🚀 自動セットアップ（推奨）
 
-### Linux / macOS（`scripts/dev.sh`）
+**Linux/macOS：**
+```bash
+bash scripts/dev.sh setup --env kakuti --ocr
+bash scripts/dev.sh start --env kakuti
+# http://localhost:5173 を開く
+```
 
-- セットアップ（依存をインストール）
-  - `bash scripts/dev.sh setup --env kakuti [--ocr]`
-- バックエンドとフロントエンドを同時起動
-  - `bash scripts/dev.sh start --env kakuti [--port 8001]`
-- 片方のみ起動
-  - `bash scripts/dev.sh backend --env kakuti [--port 8001]`
-  - `bash scripts/dev.sh frontend`
-- 状態確認 / 停止
-  - `bash scripts/dev.sh status`
-  - `bash scripts/dev.sh stop`
+**Windows：**
+```powershell
+powershell -ExecutionPolicy Bypass -File scripts/dev.ps1 setup --env kakuti --ocr
+powershell -ExecutionPolicy Bypass -File scripts/dev.ps1 start --env kakuti
+# http://localhost:5173 を開く
+```
 
-### Windows（`scripts\dev.ps1`）
+**Docker（フルスタック）：**
+```bash
+bash scripts/docker-fullstack.sh build
+export GEMINI_API_KEY="your-api-key"
+bash scripts/docker-fullstack.sh start --port 8080
+# http://localhost:8080 を開く
+```
 
-- PowerShell から実行（必要に応じて一時的に実行ポリシーを緩和）：
-  - `powershell -ExecutionPolicy Bypass -File scripts/dev.ps1 setup --env kakuti [--ocr]`
-- バックエンドとフロントエンドを同時起動
-  - `powershell -ExecutionPolicy Bypass -File scripts/dev.ps1 start --env kakuti [--port 8001]`
-- 片方のみ起動
-  - `powershell -ExecutionPolicy Bypass -File scripts/dev.ps1 backend --env kakuti [--port 8001]`
-  - `powershell -ExecutionPolicy Bypass -File scripts/dev.ps1 frontend`
-- 状態確認 / 停止
-  - `powershell -ExecutionPolicy Bypass -File scripts/dev.ps1 status`
-  - `powershell -ExecutionPolicy Bypass -File scripts/dev.ps1 stop`
+### 📖 完全インストールガイド
 
-メモ：
-- バックエンドの環境変数は `backend/.env` に設定（`REQUIRE_API_KEY`、`API_KEY`、`LLM_PROVIDER`、各種 API キーなど）。詳細は `INSTALLATION.md` を参照。
-- 既定値：バックエンド `:8001`、フロントエンド `:5173`、conda 環境名 `kakuti`、Python `3.11`。
-- ログ / PID はリポジトリ直下：`backend_uvicorn.log`、`web_vite.log`、`backend_uvicorn.pid`、`web_vite.pid`。
-- Vite の `base` はデフォルトで `/kakuti/` に設定されています。カスタムドメインへ移行する場合は `VITE_BASE_PATH=/` を指定し、CNAME を追加してください。
-- フロントエンドは `VITE_API_BASE` と `VITE_API_KEY` をビルド時に読み込みます（GitHub Actions の Secrets で設定するのがお勧めです）。
+詳細なインストールオプション、手動セットアップ、高度な設定、プロダクション デプロイについては **[INSTALLATION.md](INSTALLATION.md)** を参照してください。
 
 ## デプロイ環境
 

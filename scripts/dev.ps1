@@ -181,6 +181,36 @@ function Start-Backend {
   if (-not (Test-Path (Join-Path $BackendDir 'storage'))) {
     New-Item -ItemType Directory -Path (Join-Path $BackendDir 'storage') | Out-Null
   }
+  
+  # Create .env.engine if it doesn't exist
+  $envFile = Join-Path $BackendDir '.env.engine'
+  if (-not (Test-Path $envFile)) {
+    Write-Host "[+] Creating .env.engine"
+    $envContent = @"
+# Backend Environment Configuration
+DB_TYPE=sqlite
+DOCMIND_DB=storage/docmind.db
+LLM_PROVIDER=gemini
+REQUIRE_API_KEY=false
+GEMINI_REQUEST_TIMEOUT=30
+RAG_TOP_K=6
+RAG_MAX_CONTEXT_TOKENS=1800
+RAG_BLOCK_MAX_TOKENS=800
+RAG_BLOCK_TARGET_TOKENS=400
+RAG_BLOCK_OVERLAP_TOKENS=80
+RAG_MMR_LAMBDA=0.5
+RAG_SIMILARITY_THRESHOLD=0.65
+RAG_EMBEDDING_MODEL=text-embedding-004
+RAG_GENERATION_MODEL=gemini-1.5-flash
+ALLOWED_ORIGINS=http://localhost:5173,https://mengyang0529.github.io,https://kakuti.xyz
+HF_HOME=/tmp
+RATE_LIMIT_PER_MINUTE=120
+RATE_LIMIT_BURST=60
+"@
+    Set-Content -Path $envFile -Value $envContent -Encoding UTF8
+    Write-Host "[i] Please update $envFile with your API keys"
+  }
+  
   Stop-Port -TargetPort $Port
   Write-Host "[+] Starting backend on :$Port"
   $cmd = "set ENV_FILE=.env.engine && conda run -n $EnvName python -m uvicorn app.main:app --host 0.0.0.0 --port $Port >> `"$LogBackend`" 2>&1"
@@ -192,6 +222,19 @@ function Start-Backend {
 
 function Start-Frontend {
   Parse-CommonFlags $Args | Out-Null
+  
+  # Create .env.ui if it doesn't exist
+  $envFile = Join-Path $WebDir '.env.ui'
+  if (-not (Test-Path $envFile)) {
+    Write-Host "[+] Creating .env.ui"
+    $envContent = @"
+# Frontend Environment Configuration
+VITE_API_BASE_URL=http://localhost:8001/api/v1
+VITE_API_KEY=test-key
+"@
+    Set-Content -Path $envFile -Value $envContent -Encoding UTF8
+  }
+  
   Write-Host "[+] Starting frontend (Vite dev server)"
   $cmd = "set ENV_FILE=.env.ui && npm.cmd run dev -- --host >> `"$LogWeb`" 2>&1"
   $process = Start-Process -FilePath "cmd.exe" -ArgumentList '/c', $cmd -WorkingDirectory $WebDir -WindowStyle Hidden -PassThru
